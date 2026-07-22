@@ -6,144 +6,125 @@
 <meta name="theme-color" content="#f4f5f7">
 <title>足球賽程</title>
 <style>
-  :root{
-    --bg:#f4f5f7;--card:#fff;--text:#111827;--sub:#6b7280;--line:#e5e7eb;
-    --accent:#2563eb;--accent-soft:#dbeafe;--ok:#16a34a;--error:#dc2626;
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC",sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  button{font:inherit}
-  .app{max-width:760px;margin:0 auto;padding:16px 14px 60px}
-  .topbar{
-    position:sticky;top:0;z-index:20;background:rgba(244,245,247,.95);
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    padding:calc(10px + env(safe-area-inset-top)) 0 12px;
-  }
-  .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
-  .subtitle{font-size:13px;color:var(--sub);margin-top:6px}
-  .calendar-btn{
-    border:0;background:var(--card);width:48px;height:48px;border-radius:16px;
-    box-shadow:0 1px 7px rgba(0,0,0,.09);font-size:22px;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .status{
-    margin-top:12px;padding:11px 13px;background:var(--card);border-radius:14px;
-    font-size:13px;color:var(--sub);display:flex;align-items:center;gap:8px
-  }
-  .dot{width:8px;height:8px;border-radius:50%;background:#9ca3af;flex:none}
-  .dot.loading{background:#f59e0b;animation:pulse 1s infinite}
-  .dot.ok{background:var(--ok)}
-  .dot.error{background:var(--error)}
-  @keyframes pulse{50%{opacity:.25}}
+:root{
+  --bg:#f4f5f7;--card:#fff;--text:#111827;--sub:#6b7280;--line:#e5e7eb;
+  --accent:#2563eb;--accentSoft:#dbeafe;--ok:#16a34a;--err:#dc2626;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC",sans-serif;
+  -webkit-font-smoothing:antialiased
+}
+button{font:inherit}
+.app{max-width:760px;margin:0 auto;padding:16px 14px 60px}
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(244,245,247,.95);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  padding:calc(10px + env(safe-area-inset-top)) 0 12px
+}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
+.subtitle{font-size:13px;color:var(--sub);margin-top:6px}
+.calendar-btn{
+  border:0;background:#fff;width:48px;height:48px;border-radius:16px;
+  box-shadow:0 1px 7px rgba(0,0,0,.09);font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center
+}
+.status{
+  margin-top:12px;padding:11px 13px;background:#fff;border-radius:14px;
+  font-size:13px;color:var(--sub);display:flex;align-items:center;gap:8px
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#9ca3af;flex:none}
+.dot.loading{background:#f59e0b;animation:pulse 1s infinite}
+.dot.ok{background:var(--ok)} .dot.error{background:var(--err)}
+@keyframes pulse{50%{opacity:.25}}
 
-  .day{margin-top:18px;scroll-margin-top:125px}
-  .day-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px}
-  .day-title{font-size:21px;font-weight:850;letter-spacing:-.3px}
-  .today-badge{
-    display:inline-block;margin-left:7px;padding:3px 7px;border-radius:999px;
-    background:#111827;color:#fff;font-size:11px;font-weight:800;vertical-align:3px
-  }
-  .day-count{font-size:12px;color:var(--sub)}
-  .empty{
-    background:var(--card);border-radius:17px;padding:20px;
-    color:#9ca3af;text-align:center;font-size:14px
-  }
-  .league{
-    background:var(--card);border-radius:18px;margin-bottom:11px;overflow:hidden;
-    box-shadow:0 1px 4px rgba(0,0,0,.045)
-  }
-  .league-head{
-    display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)
-  }
-  .league-logo{width:30px;height:30px;object-fit:contain;flex:none}
-  .league-name{font-size:15px;font-weight:850;flex:1}
-  .match{
-    display:grid;grid-template-columns:55px minmax(0,1fr) 36px minmax(0,1fr);
-    align-items:center;gap:8px;padding:12px 11px;border-bottom:1px solid var(--line)
-  }
-  .match:last-child{border-bottom:0}
-  .time{text-align:center;font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
-  .team{font-size:14px;font-weight:650;line-height:1.28;overflow-wrap:anywhere}
-  .team.home{text-align:right}.team.away{text-align:left}
-  .vs{text-align:center;font-size:12px;color:#9ca3af;font-weight:800}
-  .score{font-size:14px;color:var(--text);font-weight:900}
-  .error-box{
-    display:none;margin-top:18px;background:#fff;border-radius:17px;padding:16px;
-    color:#b91c1c;font-size:14px;line-height:1.6;white-space:pre-line
-  }
-  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:28px;line-height:1.6}
+.day{margin-top:18px;scroll-margin-top:125px}
+.day-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px}
+.day-title{font-size:21px;font-weight:850;letter-spacing:-.3px}
+.today-badge{
+  display:inline-block;margin-left:7px;padding:3px 7px;border-radius:999px;
+  background:#111827;color:#fff;font-size:11px;font-weight:800;vertical-align:3px
+}
+.day-count{font-size:12px;color:var(--sub)}
+.empty{
+  background:#fff;border-radius:17px;padding:20px;color:#9ca3af;
+  text-align:center;font-size:14px
+}
+.league{
+  background:#fff;border-radius:18px;margin-bottom:11px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,.045)
+}
+.league-head{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)
+}
+.league-logo{width:30px;height:30px;object-fit:contain;flex:none}
+.league-name{font-size:15px;font-weight:850;flex:1}
+.stage{
+  font-size:11px;color:var(--sub);padding:7px 12px 0;font-weight:700
+}
+.match{
+  display:grid;grid-template-columns:52px minmax(0,1fr) 36px minmax(0,1fr);
+  align-items:center;gap:7px;padding:12px 9px;border-bottom:1px solid var(--line)
+}
+.match:last-child{border-bottom:0}
+.time{text-align:center;font-size:13px;font-weight:850;font-variant-numeric:tabular-nums}
+.team{line-height:1.15;min-width:0}
+.team.home{text-align:right}.team.away{text-align:left}
+.team-en{font-size:13px;font-weight:750;overflow-wrap:anywhere}
+.team-zh{font-size:11px;color:var(--sub);margin-top:4px;overflow-wrap:anywhere}
+.vs{text-align:center;font-size:12px;color:#9ca3af;font-weight:800}
+.score{font-size:14px;color:var(--text);font-weight:900}
+.error-box{
+  display:none;margin-top:18px;background:#fff;border-radius:17px;padding:16px;
+  color:#b91c1c;font-size:14px;line-height:1.6;white-space:pre-line
+}
+.footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:28px;line-height:1.6}
 
-  /* 日期區間選擇器 */
-  .modal{
-    position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.36);
-    display:none;align-items:flex-end;justify-content:center;
-  }
-  .modal.show{display:flex}
-  .sheet{
-    width:min(760px,100%);max-height:88vh;overflow:auto;background:#fff;
-    border-radius:26px 26px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
-    box-shadow:0 -10px 35px rgba(0,0,0,.18)
-  }
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-  .sheet-title{font-size:22px;font-weight:900}
-  .close-btn{
-    border:0;background:#f3f4f6;width:36px;height:36px;border-radius:12px;
-    font-size:20px;cursor:pointer
-  }
-  .range-summary{
-    display:grid;grid-template-columns:1fr 28px 1fr;gap:8px;align-items:center;
-    margin-bottom:14px
-  }
-  .range-box{
-    border:1.5px solid var(--line);border-radius:14px;padding:11px 10px;
-    text-align:center;background:#fff;cursor:pointer
-  }
-  .range-box.active{border-color:var(--accent);background:var(--accent-soft)}
-  .range-label{font-size:11px;color:var(--sub);margin-bottom:3px}
-  .range-date{font-size:14px;font-weight:850}
-  .arrow{text-align:center;color:#9ca3af}
-  .hint{text-align:center;color:var(--sub);font-size:12px;margin-bottom:12px}
-  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .month-title{font-size:17px;font-weight:900}
-  .nav-btn{
-    border:0;background:#f3f4f6;width:38px;height:38px;border-radius:12px;
-    font-size:20px;cursor:pointer
-  }
-  .weekdays,.calendar-grid{
-    display:grid;grid-template-columns:repeat(7,1fr);gap:4px
-  }
-  .weekdays div{text-align:center;font-size:11px;color:#9ca3af;padding:7px 0}
-  .day-btn{
-    border:0;background:transparent;aspect-ratio:1/1;border-radius:12px;
-    font-weight:750;cursor:pointer;position:relative;color:var(--text)
-  }
-  .day-btn.other{color:#cbd5e1}
-  .day-btn.today::after{
-    content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);
-    width:4px;height:4px;border-radius:50%;background:var(--accent)
-  }
-  .day-btn.selected{background:var(--accent);color:#fff}
-  .day-btn.in-range{background:var(--accent-soft);border-radius:8px}
-  .day-btn.selected.today::after{background:#fff}
-  .sheet-actions{display:flex;gap:10px;margin-top:16px}
-  .btn{
-    flex:1;border:0;border-radius:14px;padding:14px 12px;font-weight:900;cursor:pointer
-  }
-  .btn.secondary{background:#f3f4f6;color:var(--text)}
-  .btn.primary{background:#111827;color:#fff}
-  .btn.primary:disabled{opacity:.4;cursor:not-allowed}
+/* 日期選擇 */
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.36);display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.sheet{
+  width:min(760px,100%);max-height:88vh;overflow:auto;background:#fff;
+  border-radius:26px 26px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -10px 35px rgba(0,0,0,.18)
+}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sheet-title{font-size:22px;font-weight:900}
+.close-btn{border:0;background:#f3f4f6;width:36px;height:36px;border-radius:12px;font-size:20px}
+.range-summary{display:grid;grid-template-columns:1fr 28px 1fr;gap:8px;align-items:center;margin-bottom:14px}
+.range-box{border:1.5px solid var(--line);border-radius:14px;padding:11px 10px;text-align:center;cursor:pointer}
+.range-box.active{border-color:var(--accent);background:var(--accentSoft)}
+.range-label{font-size:11px;color:var(--sub);margin-bottom:3px}
+.range-date{font-size:14px;font-weight:850}
+.arrow{text-align:center;color:#9ca3af}
+.hint{text-align:center;color:var(--sub);font-size:12px;margin-bottom:12px}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.month-title{font-size:17px;font-weight:900}
+.nav-btn{border:0;background:#f3f4f6;width:38px;height:38px;border-radius:12px;font-size:20px}
+.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.weekdays div{text-align:center;font-size:11px;color:#9ca3af;padding:7px 0}
+.day-btn{
+  border:0;background:transparent;aspect-ratio:1/1;border-radius:12px;
+  font-weight:750;cursor:pointer;position:relative;color:var(--text)
+}
+.day-btn.other{color:#cbd5e1}
+.day-btn.today::after{content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.day-btn.selected{background:var(--accent);color:#fff}
+.day-btn.in-range{background:var(--accentSoft);border-radius:8px}
+.day-btn.selected.today::after{background:#fff}
+.sheet-actions{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;border:0;border-radius:14px;padding:14px 12px;font-weight:900}
+.btn.secondary{background:#f3f4f6}.btn.primary{background:#111827;color:#fff}
+.btn.primary:disabled{opacity:.4}
 
-  @media(max-width:430px){
-    h1{font-size:28px}
-    .match{grid-template-columns:49px minmax(0,1fr) 30px minmax(0,1fr);gap:6px;padding:11px 8px}
-    .team,.time{font-size:13px}
-  }
+@media(max-width:430px){
+  h1{font-size:28px}
+  .match{grid-template-columns:48px minmax(0,1fr) 30px minmax(0,1fr);gap:5px;padding:11px 7px}
+  .team-en{font-size:12px}.team-zh{font-size:10px}.time{font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -164,455 +145,404 @@
 
   <main id="schedule"></main>
   <div id="errorBox" class="error-box"></div>
-  <div class="footer">資料來源：ESPN 公開賽程資料<br>相同日期區間 6 小時內優先使用快取</div>
+  <div class="footer">資料來源：ESPN 公開賽程資料<br>包含主要聯賽、歐洲俱樂部賽事與重要國家隊賽事</div>
 </div>
 
 <div id="calendarModal" class="modal">
   <div class="sheet">
     <div class="sheet-head">
       <div class="sheet-title">選擇日期區間</div>
-      <button id="closeCalendarBtn" class="close-btn" aria-label="關閉">×</button>
+      <button id="closeCalendarBtn" class="close-btn">×</button>
     </div>
-
     <div class="range-summary">
       <div id="startBox" class="range-box active">
-        <div class="range-label">開始日期</div>
-        <div id="startText" class="range-date">尚未選擇</div>
+        <div class="range-label">開始日期</div><div id="startText" class="range-date"></div>
       </div>
       <div class="arrow">→</div>
       <div id="endBox" class="range-box">
-        <div class="range-label">結束日期</div>
-        <div id="endText" class="range-date">尚未選擇</div>
+        <div class="range-label">結束日期</div><div id="endText" class="range-date"></div>
       </div>
     </div>
-
-    <div id="selectionHint" class="hint">請先選擇開始日期</div>
-
+    <div id="selectionHint" class="hint"></div>
     <div class="month-nav">
       <button id="prevMonthBtn" class="nav-btn">‹</button>
       <div id="monthTitle" class="month-title"></div>
       <button id="nextMonthBtn" class="nav-btn">›</button>
     </div>
-
-    <div class="weekdays">
-      <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
-    </div>
+    <div class="weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
     <div id="calendarGrid" class="calendar-grid"></div>
-
     <div class="sheet-actions">
       <button id="resetBtn" class="btn secondary">重設</button>
-      <button id="confirmRangeBtn" class="btn primary" disabled>確定</button>
+      <button id="confirmRangeBtn" class="btn primary">確定</button>
     </div>
   </div>
 </div>
 
 <script>
 (() => {
-  "use strict";
+"use strict";
 
-  const CACHE_PREFIX = "euro_football_schedule_cache_v3_";
-  const CACHE_TTL = 6 * 60 * 60 * 1000;
+const CACHE_TTL = 6*60*60*1000;
+const CACHE_PREFIX = "football_schedule_full_v5_";
+const TRANSLATION_CACHE_KEY = "football_team_zh_cache_v1";
 
-  const COMPETITIONS = [
-    { slug:"eng.1", name:"英格蘭超級聯賽", order:1 },
-    { slug:"esp.1", name:"西班牙甲級聯賽", order:2 },
-    { slug:"ita.1", name:"義大利甲級聯賽", order:3 },
-    { slug:"ger.1", name:"德國甲級聯賽", order:4 },
-    { slug:"fra.1", name:"法國甲級聯賽", order:5 },
-    { slug:"uefa.champions", name:"歐洲冠軍聯賽", order:6 },
-    { slug:"uefa.europa", name:"歐霸聯賽", order:7 },
-    { slug:"uefa.europa.conf", name:"歐洲協會聯賽", order:8 }
-  ];
+/*
+  sourceName：實際 ESPN 賽事來源
+  groupName：畫面上合併顯示的大分類
+  stagePrefix：資格賽等附加標示
+*/
+const SOURCES = [
+  {slug:"eng.1",sourceName:"Premier League",groupName:"英格蘭超級聯賽",order:10},
+  {slug:"esp.1",sourceName:"LaLiga",groupName:"西班牙甲級聯賽",order:20},
+  {slug:"ita.1",sourceName:"Serie A",groupName:"義大利甲級聯賽",order:30},
+  {slug:"ger.1",sourceName:"Bundesliga",groupName:"德國甲級聯賽",order:40},
+  {slug:"fra.1",sourceName:"Ligue 1",groupName:"法國甲級聯賽",order:50},
 
-  const els = {
-    schedule: document.getElementById("schedule"),
-    statusDot: document.getElementById("statusDot"),
-    statusText: document.getElementById("statusText"),
-    errorBox: document.getElementById("errorBox"),
-    rangeSubtitle: document.getElementById("rangeSubtitle"),
-    calendarBtn: document.getElementById("calendarBtn"),
-    calendarModal: document.getElementById("calendarModal"),
-    closeCalendarBtn: document.getElementById("closeCalendarBtn"),
-    startBox: document.getElementById("startBox"),
-    endBox: document.getElementById("endBox"),
-    startText: document.getElementById("startText"),
-    endText: document.getElementById("endText"),
-    selectionHint: document.getElementById("selectionHint"),
-    monthTitle: document.getElementById("monthTitle"),
-    calendarGrid: document.getElementById("calendarGrid"),
-    prevMonthBtn: document.getElementById("prevMonthBtn"),
-    nextMonthBtn: document.getElementById("nextMonthBtn"),
-    resetBtn: document.getElementById("resetBtn"),
-    confirmRangeBtn: document.getElementById("confirmRangeBtn")
+  {slug:"uefa.champions",sourceName:"UEFA Champions League",groupName:"歐洲冠軍聯賽",order:60},
+  {slug:"uefa.champions_qual",sourceName:"UEFA Champions League Qualifying",groupName:"歐洲冠軍聯賽",order:60,stagePrefix:"資格賽"},
+
+  {slug:"uefa.europa",sourceName:"UEFA Europa League",groupName:"歐霸聯賽",order:70},
+  {slug:"uefa.europa_qual",sourceName:"UEFA Europa League Qualifying",groupName:"歐霸聯賽",order:70,stagePrefix:"資格賽"},
+
+  {slug:"uefa.europa.conf",sourceName:"UEFA Conference League",groupName:"歐洲協會聯賽",order:80},
+  {slug:"uefa.europa.conf_qual",sourceName:"UEFA Conference League Qualifying",groupName:"歐洲協會聯賽",order:80,stagePrefix:"資格賽"},
+
+  {slug:"fifa.world",sourceName:"FIFA World Cup",groupName:"世界盃",order:100},
+  {slug:"fifa.worldq.uefa",sourceName:"FIFA World Cup Qualifying - UEFA",groupName:"世界盃",order:100,stagePrefix:"歐洲區資格賽"},
+  {slug:"fifa.worldq.conmebol",sourceName:"FIFA World Cup Qualifying - CONMEBOL",groupName:"世界盃",order:100,stagePrefix:"南美洲區資格賽"},
+  {slug:"fifa.worldq.concacaf",sourceName:"FIFA World Cup Qualifying - CONCACAF",groupName:"世界盃",order:100,stagePrefix:"中北美洲及加勒比海區資格賽"},
+  {slug:"fifa.worldq.afc",sourceName:"FIFA World Cup Qualifying - AFC",groupName:"世界盃",order:100,stagePrefix:"亞洲區資格賽"},
+  {slug:"fifa.worldq.caf",sourceName:"FIFA World Cup Qualifying - CAF",groupName:"世界盃",order:100,stagePrefix:"非洲區資格賽"},
+  {slug:"fifa.worldq.ofc",sourceName:"FIFA World Cup Qualifying - OFC",groupName:"世界盃",order:100,stagePrefix:"大洋洲區資格賽"},
+
+  {slug:"uefa.euro",sourceName:"UEFA European Championship",groupName:"歐洲國家盃",order:110},
+  {slug:"uefa.euroq",sourceName:"UEFA European Championship Qualifying",groupName:"歐洲國家盃",order:110,stagePrefix:"資格賽"},
+  {slug:"uefa.nations",sourceName:"UEFA Nations League",groupName:"歐洲國家聯賽",order:120},
+
+  {slug:"conmebol.copa_america",sourceName:"Copa América",groupName:"美洲盃",order:130}
+];
+
+const TEAM_ZH = {
+  /* 國家隊 */
+  "Argentina":"阿根廷","Australia":"澳洲","Austria":"奧地利","Belgium":"比利時",
+  "Brazil":"巴西","Canada":"加拿大","Chile":"智利","China":"中國","Colombia":"哥倫比亞",
+  "Croatia":"克羅埃西亞","Czechia":"捷克","Czech Republic":"捷克","Denmark":"丹麥",
+  "Ecuador":"厄瓜多","Egypt":"埃及","England":"英格蘭","Finland":"芬蘭","France":"法國",
+  "Germany":"德國","Ghana":"迦納","Greece":"希臘","Hungary":"匈牙利","Iceland":"冰島",
+  "Iran":"伊朗","Iraq":"伊拉克","Ireland":"愛爾蘭","Israel":"以色列","Italy":"義大利",
+  "Ivory Coast":"象牙海岸","Japan":"日本","Jordan":"約旦","Mexico":"墨西哥",
+  "Morocco":"摩洛哥","Netherlands":"荷蘭","New Zealand":"紐西蘭","Nigeria":"奈及利亞",
+  "North Macedonia":"北馬其頓","Northern Ireland":"北愛爾蘭","Norway":"挪威",
+  "Panama":"巴拿馬","Paraguay":"巴拉圭","Peru":"秘魯","Poland":"波蘭","Portugal":"葡萄牙",
+  "Qatar":"卡達","Romania":"羅馬尼亞","Saudi Arabia":"沙烏地阿拉伯",
+  "Scotland":"蘇格蘭","Senegal":"塞內加爾","Serbia":"塞爾維亞","Slovakia":"斯洛伐克",
+  "Slovenia":"斯洛維尼亞","South Africa":"南非","South Korea":"南韓","Korea Republic":"南韓",
+  "Spain":"西班牙","Sweden":"瑞典","Switzerland":"瑞士","Tunisia":"突尼西亞",
+  "Turkey":"土耳其","Türkiye":"土耳其","Ukraine":"烏克蘭","United States":"美國",
+  "USA":"美國","Uruguay":"烏拉圭","Uzbekistan":"烏茲別克","Venezuela":"委內瑞拉",
+  "Wales":"威爾斯",
+
+  /* 英超常見 */
+  "Arsenal":"阿森納","Aston Villa":"阿斯頓維拉","Bournemouth":"伯恩茅斯",
+  "Brentford":"布倫特福德","Brighton & Hove Albion":"布萊頓",
+  "Burnley":"伯恩利","Chelsea":"切爾西","Crystal Palace":"水晶宮",
+  "Everton":"艾佛頓","Fulham":"富勒姆","Leeds United":"里茲聯",
+  "Liverpool":"利物浦","Manchester City":"曼城","Manchester United":"曼聯",
+  "Newcastle United":"紐卡索聯","Nottingham Forest":"諾丁漢森林",
+  "Sunderland":"桑德蘭","Tottenham Hotspur":"熱刺","West Ham United":"西漢姆聯",
+  "Wolverhampton Wanderers":"狼隊",
+
+  /* 西甲常見 */
+  "Real Madrid":"皇家馬德里","Barcelona":"巴塞隆納","Atlético Madrid":"馬德里競技",
+  "Athletic Club":"畢爾包競技","Athletic Bilbao":"畢爾包競技","Sevilla":"塞維利亞",
+  "Real Betis":"皇家貝提斯","Villarreal":"比利亞雷阿爾","Valencia":"瓦倫西亞",
+  "Real Sociedad":"皇家社會","Celta Vigo":"塞爾塔","Osasuna":"奧薩蘇納",
+  "Girona":"赫羅納","Espanyol":"西班牙人","Mallorca":"馬略卡","Getafe":"赫塔費",
+
+  /* 義甲常見 */
+  "Inter Milan":"國際米蘭","Internazionale":"國際米蘭","AC Milan":"AC米蘭",
+  "Juventus":"尤文圖斯","Napoli":"拿坡里","AS Roma":"羅馬","Roma":"羅馬",
+  "Lazio":"拉齊奧","Atalanta":"亞特蘭大","Fiorentina":"佛羅倫斯",
+  "Bologna":"波隆那","Torino":"杜林","Udinese":"烏迪內斯","Genoa":"熱那亞",
+
+  /* 德甲常見 */
+  "Bayern Munich":"拜仁慕尼黑","Borussia Dortmund":"多特蒙德",
+  "Bayer Leverkusen":"勒沃庫森","RB Leipzig":"RB萊比錫",
+  "Eintracht Frankfurt":"法蘭克福","VfB Stuttgart":"斯圖加特",
+  "Borussia Mönchengladbach":"門興格拉德巴赫","Werder Bremen":"雲達不萊梅",
+  "Wolfsburg":"沃爾夫斯堡","Mainz":"美因茲","Hoffenheim":"霍芬海姆",
+
+  /* 法甲常見 */
+  "Paris Saint-Germain":"巴黎聖日耳曼","PSG":"巴黎聖日耳曼","Marseille":"馬賽",
+  "Monaco":"摩納哥","Lyon":"里昂","Lille":"里爾","Nice":"尼斯","Lens":"朗斯",
+  "Rennes":"雷恩","Strasbourg":"史特拉斯堡",
+
+  /* 歐戰常見 */
+  "Ajax Amsterdam":"阿賈克斯","Ajax":"阿賈克斯","Benfica":"本菲卡","FC Porto":"波爾圖",
+  "Porto":"波爾圖","Sporting CP":"里斯本競技","PSV Eindhoven":"PSV燕豪芬",
+  "Feyenoord":"飛燕諾","Celtic":"塞爾提克","Rangers":"格拉斯哥流浪者",
+  "Galatasaray":"加拉塔薩雷","Fenerbahce":"費內巴切","Fenerbahçe":"費內巴切",
+  "Olympiacos":"奧林匹亞科斯","Red Star Belgrade":"貝爾格勒紅星",
+  "Shakhtar Donetsk":"頓內次克礦工","Dynamo Kyiv":"基輔迪納摩",
+  "FC Copenhagen":"哥本哈根","Copenhagen":"哥本哈根","Young Boys":"年輕人",
+  "Red Bull Salzburg":"薩爾斯堡紅牛","Salzburg":"薩爾斯堡",
+  "Club Brugge":"布魯日","Anderlecht":"安德萊赫特"
+};
+
+const els = Object.fromEntries(
+  ["schedule","statusDot","statusText","errorBox","rangeSubtitle","calendarBtn","calendarModal",
+   "closeCalendarBtn","startBox","endBox","startText","endText","selectionHint","monthTitle",
+   "calendarGrid","prevMonthBtn","nextMonthBtn","resetBtn","confirmRangeBtn"]
+  .map(id=>[id,document.getElementById(id)])
+);
+
+function setStatus(t,type=""){els.statusText.textContent=t;els.statusDot.className="dot"+(type?" "+type:"")}
+
+function localKey(d){
+  const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d);
+  const m=Object.fromEntries(p.map(x=>[x.type,x.value]));
+  return `${m.year}-${m.month}-${m.day}`;
+}
+function fromKey(k){return new Date(k+"T00:00:00+08:00")}
+function today(){return fromKey(localKey(new Date()))}
+function addDays(d,n){return new Date(d.getTime()+n*86400000)}
+function compact(d){return localKey(d).replaceAll("-","")}
+function dateCount(a,b){return Math.floor((fromKey(localKey(b))-fromKey(localKey(a)))/86400000)+1}
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function fmtDay(d){return new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",month:"numeric",day:"numeric",weekday:"short"}).format(d)}
+function fmtDate(d){return new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",year:"numeric",month:"numeric",day:"numeric"}).format(d)}
+function fmtTime(iso){return new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
+
+let activeStart=today(), activeEnd=addDays(activeStart,13);
+let tempStart=null,tempEnd=null,selecting="start";
+let viewMonth=new Date(activeStart.getFullYear(),activeStart.getMonth(),1);
+
+function getTranslationCache(){
+  try{return JSON.parse(localStorage.getItem(TRANSLATION_CACHE_KEY)||"{}")}catch{return {}}
+}
+function saveTranslationCache(c){localStorage.setItem(TRANSLATION_CACHE_KEY,JSON.stringify(c))}
+
+function localChineseName(name){
+  if(TEAM_ZH[name]) return TEAM_ZH[name];
+  const cache=getTranslationCache();
+  return cache[name]||"中文名稱載入中…";
+}
+
+async function translateUnknownNames(fixtures){
+  const cache=getTranslationCache();
+  const names=[...new Set(fixtures.flatMap(f=>[f.home,f.away]))]
+    .filter(n=>!TEAM_ZH[n]&&!cache[n]);
+
+  // 控制一次最多翻譯 80 個新名稱，避免過量請求。
+  for(const name of names.slice(0,80)){
+    try{
+      const url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-TW&dt=t&q="+encodeURIComponent(name);
+      const r=await fetch(url);
+      if(!r.ok) continue;
+      const d=await r.json();
+      const translated=(d?.[0]||[]).map(x=>x?.[0]||"").join("").trim();
+      if(translated) cache[name]=translated;
+    }catch{}
+  }
+  saveTranslationCache(cache);
+}
+
+function teamZh(name){
+  return TEAM_ZH[name]||getTranslationCache()[name]||name;
+}
+
+function normalizeEvent(event,source,logo){
+  const comp=event?.competitions?.[0];
+  const competitors=comp?.competitors||[];
+  const home=competitors.find(x=>x.homeAway==="home");
+  const away=competitors.find(x=>x.homeAway==="away");
+  if(!home||!away||!event.date)return null;
+  const state=event?.status?.type?.state||"pre";
+  const completed=!!event?.status?.type?.completed;
+  const hasScore=state==="in"||completed;
+  const detail=event?.status?.type?.detail||event?.status?.type?.shortDetail||"";
+  return{
+    id:`${source.slug}_${event.id}`,
+    sourceSlug:source.slug,groupName:source.groupName,order:source.order,
+    stagePrefix:source.stagePrefix||"",leagueLogo:logo||"",date:event.date,
+    stage:detail,
+    home:home.team?.displayName||home.team?.shortDisplayName||"Home",
+    away:away.team?.displayName||away.team?.shortDisplayName||"Away",
+    homeScore:hasScore?home.score:null,awayScore:hasScore?away.score:null
   };
+}
 
-  function setStatus(text,type=""){
-    els.statusText.textContent=text;
-    els.statusDot.className="dot"+(type?" "+type:"");
-  }
+async function fetchSource(source,start,end){
+  const url=`https://site.api.espn.com/apis/site/v2/sports/soccer/${source.slug}/scoreboard?dates=${compact(start)}-${compact(end)}&limit=1000`;
+  const r=await fetch(url,{cache:"no-store"});
+  if(!r.ok) throw new Error(`${source.groupName} ${source.stagePrefix||""} HTTP ${r.status}`);
+  const d=await r.json();
+  const logo=d?.leagues?.[0]?.logos?.[0]?.href||d?.leagues?.[0]?.logos?.[1]?.href||"";
+  return (Array.isArray(d.events)?d.events:[]).map(e=>normalizeEvent(e,source,logo)).filter(Boolean);
+}
 
-  function localDateKey(date){
-    const p=new Intl.DateTimeFormat("en-CA",{
-      timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"
-    }).formatToParts(date);
-    const m=Object.fromEntries(p.map(x=>[x.type,x.value]));
-    return `${m.year}-${m.month}-${m.day}`;
-  }
+async function fetchAll(start,end){
+  const settled=await Promise.allSettled(SOURCES.map(s=>fetchSource(s,start,end)));
+  const fixtures=[],seen=new Set(),errors=[];
+  settled.forEach((r,i)=>{
+    if(r.status==="fulfilled"){
+      for(const f of r.value) if(!seen.has(f.id)){seen.add(f.id);fixtures.push(f)}
+    }else errors.push(r.reason?.message||SOURCES[i].groupName);
+  });
+  fixtures.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  return{fixtures,errors,fetchedAt:Date.now()};
+}
 
-  function dateFromKey(key){ return new Date(key+"T00:00:00+08:00"); }
-  function taiwanTodayStart(){ return dateFromKey(localDateKey(new Date())); }
-  function addDays(date,days){ return new Date(date.getTime()+days*86400000); }
-  function compactDate(date){ return localDateKey(date).replaceAll("-",""); }
+function cacheKey(s,e){return CACHE_PREFIX+localKey(s)+"_"+localKey(e)}
+function readCache(s,e){
+  try{const d=JSON.parse(localStorage.getItem(cacheKey(s,e))||"null");return d&&Array.isArray(d.fixtures)?d:null}catch{return null}
+}
+function saveCache(s,e,d){localStorage.setItem(cacheKey(s,e),JSON.stringify(d))}
+function fresh(c){return c&&Date.now()-c.fetchedAt<CACHE_TTL}
+function fmtUpdate(ts){return new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(ts))}
 
-  function formatDay(date){
-    return new Intl.DateTimeFormat("zh-TW",{
-      timeZone:"Asia/Taipei",month:"numeric",day:"numeric",weekday:"short"
-    }).format(date);
-  }
+function render(fixtures,start,end){
+  const out=[],count=dateCount(start,end),todayKey=localKey(today());
 
-  function formatShortDate(date){
-    return new Intl.DateTimeFormat("zh-TW",{
-      timeZone:"Asia/Taipei",year:"numeric",month:"numeric",day:"numeric"
-    }).format(date);
-  }
+  for(let i=0;i<count;i++){
+    const day=addDays(start,i),key=localKey(day);
+    const items=fixtures.filter(f=>localKey(new Date(f.date))===key);
 
-  function formatTime(iso){
-    return new Intl.DateTimeFormat("zh-TW",{
-      timeZone:"Asia/Taipei",hour:"2-digit",minute:"2-digit",hour12:false
-    }).format(new Date(iso));
-  }
-
-  function escapeHtml(v){
-    return String(v??"")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  }
-
-  function daysBetweenInclusive(start,end){
-    return Math.floor((dateFromKey(localDateKey(end))-dateFromKey(localDateKey(start)))/86400000)+1;
-  }
-
-  let activeStart = taiwanTodayStart();
-  let activeEnd = addDays(activeStart,13);
-
-  let tempStart = null;
-  let tempEnd = null;
-  let selecting = "start";
-  let viewMonth = new Date(activeStart.getFullYear(), activeStart.getMonth(), 1);
-
-  function updateRangeSubtitle(){
-    const todayKey = localDateKey(taiwanTodayStart());
-    if(localDateKey(activeStart)===todayKey && daysBetweenInclusive(activeStart,activeEnd)===14){
-      els.rangeSubtitle.textContent="今天起 14 天 · 台灣時間";
-    }else{
-      els.rangeSubtitle.textContent=`${formatShortDate(activeStart)} ～ ${formatShortDate(activeEnd)} · 台灣時間`;
+    const groups=new Map();
+    for(const f of items){
+      const groupKey=f.groupName;
+      if(!groups.has(groupKey))groups.set(groupKey,[]);
+      groups.get(groupKey).push(f);
     }
-  }
 
-  function getCompetition(slug){ return COMPETITIONS.find(c=>c.slug===slug); }
+    const sorted=[...groups.entries()].sort((a,b)=>a[1][0].order-b[1][0].order);
+    let body=`<div class="empty">本日無賽事</div>`;
 
-  function normalizeEvent(event,competition,leagueLogo){
-    const comp=event?.competitions?.[0];
-    const competitors=comp?.competitors||[];
-    const home=competitors.find(x=>x.homeAway==="home");
-    const away=competitors.find(x=>x.homeAway==="away");
-    if(!home||!away||!event.date) return null;
-    const state=event?.status?.type?.state||"pre";
-    const completed=!!event?.status?.type?.completed;
-    const hasScore=state==="in"||completed;
-    return {
-      id:event.id,
-      competitionSlug:competition.slug,
-      competitionName:competition.name,
-      competitionOrder:competition.order,
-      leagueLogo:leagueLogo||"",
-      date:event.date,
-      home:home.team?.displayName||home.team?.shortDisplayName||"主隊",
-      away:away.team?.displayName||away.team?.shortDisplayName||"客隊",
-      homeScore:hasScore?home.score:null,
-      awayScore:hasScore?away.score:null
-    };
-  }
+    if(sorted.length){
+      body=sorted.map(([groupName,matches])=>{
+        matches.sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const logo=matches.find(x=>x.leagueLogo)?.leagueLogo||"";
 
-  async function fetchCompetition(competition,fromDate,toDate){
-    const url=
-      `https://site.api.espn.com/apis/site/v2/sports/soccer/${competition.slug}/scoreboard`+
-      `?dates=${compactDate(fromDate)}-${compactDate(toDate)}&limit=1000`;
-    const res=await fetch(url,{cache:"no-store"});
-    if(!res.ok) throw new Error(`${competition.name}：HTTP ${res.status}`);
-    const data=await res.json();
-    const leagueLogo=data?.leagues?.[0]?.logos?.[0]?.href||data?.leagues?.[0]?.logos?.[1]?.href||"";
-    const events=Array.isArray(data.events)?data.events:[];
-    return events.map(e=>normalizeEvent(e,competition,leagueLogo)).filter(Boolean);
-  }
-
-  async function fetchAll(start,end){
-    const settled=await Promise.allSettled(
-      COMPETITIONS.map(c=>fetchCompetition(c,start,end))
-    );
-    const fixtures=[],errors=[],seen=new Set();
-    settled.forEach((result,i)=>{
-      if(result.status==="fulfilled"){
-        for(const item of result.value){
-          if(!seen.has(item.id)){seen.add(item.id);fixtures.push(item);}
-        }
-      }else{
-        errors.push(`${COMPETITIONS[i].name}：${result.reason?.message||"查詢失敗"}`);
-      }
-    });
-    fixtures.sort((a,b)=>new Date(a.date)-new Date(b.date));
-    return {fixtures,errors,fetchedAt:Date.now()};
-  }
-
-  function cacheKey(start,end){
-    return CACHE_PREFIX+localDateKey(start)+"_"+localDateKey(end);
-  }
-
-  function saveCache(start,end,payload){
-    localStorage.setItem(cacheKey(start,end),JSON.stringify(payload));
-  }
-
-  function readCache(start,end){
-    try{
-      const raw=localStorage.getItem(cacheKey(start,end));
-      if(!raw) return null;
-      const data=JSON.parse(raw);
-      if(!data||!Array.isArray(data.fixtures)||!data.fetchedAt) return null;
-      return data;
-    }catch{return null;}
-  }
-
-  function isCacheFresh(cache){
-    return cache&&(Date.now()-cache.fetchedAt<CACHE_TTL);
-  }
-
-  function formatUpdateTime(ts){
-    return new Intl.DateTimeFormat("zh-TW",{
-      timeZone:"Asia/Taipei",month:"numeric",day:"numeric",
-      hour:"2-digit",minute:"2-digit",hour12:false
-    }).format(new Date(ts));
-  }
-
-  function render(fixtures,start,end){
-    const output=[];
-    const count=daysBetweenInclusive(start,end);
-    const todayKey=localDateKey(taiwanTodayStart());
-
-    for(let i=0;i<count;i++){
-      const day=addDays(start,i);
-      const key=localDateKey(day);
-      const dayFixtures=fixtures.filter(f=>localDateKey(new Date(f.date))===key);
-
-      const groups=new Map();
-      for(const f of dayFixtures){
-        if(!groups.has(f.competitionSlug)) groups.set(f.competitionSlug,[]);
-        groups.get(f.competitionSlug).push(f);
-      }
-
-      const sortedGroups=[...groups.entries()].sort((a,b)=>
-        getCompetition(a[0]).order-getCompetition(b[0]).order
-      );
-
-      let body=`<div class="empty">本日無賽事</div>`;
-
-      if(sortedGroups.length){
-        body=sortedGroups.map(([slug,matches])=>{
-          const meta=getCompetition(slug);
-          matches.sort((a,b)=>new Date(a.date)-new Date(b.date));
-          const logo=matches.find(x=>x.leagueLogo)?.leagueLogo||"";
-
-          const rows=matches.map(m=>{
-            const center=m.homeScore!==null&&m.awayScore!==null
-              ? `<span class="score">${escapeHtml(m.homeScore)}-${escapeHtml(m.awayScore)}</span>`:"VS";
-            return `
-              <div class="match">
-                <div class="time">${escapeHtml(formatTime(m.date))}</div>
-                <div class="team home">${escapeHtml(m.home)}</div>
-                <div class="vs">${center}</div>
-                <div class="team away">${escapeHtml(m.away)}</div>
-              </div>`;
-          }).join("");
-
+        const rows=matches.map(m=>{
+          const stageText=[m.stagePrefix,m.stage].filter(Boolean).join(" · ");
+          const center=m.homeScore!==null&&m.awayScore!==null
+            ? `<span class="score">${esc(m.homeScore)}-${esc(m.awayScore)}</span>`:"VS";
           return `
-            <section class="league">
-              <div class="league-head">
-                ${logo?`<img class="league-logo" src="${escapeHtml(logo)}" alt="" loading="lazy">`:""}
-                <div class="league-name">${escapeHtml(meta.name)}</div>
+            ${stageText?`<div class="stage">${esc(stageText)}</div>`:""}
+            <div class="match">
+              <div class="time">${esc(fmtTime(m.date))}</div>
+              <div class="team home">
+                <div class="team-en">${esc(m.home)}</div>
+                <div class="team-zh">${esc(teamZh(m.home))}</div>
               </div>
-              ${rows}
-            </section>`;
+              <div class="vs">${center}</div>
+              <div class="team away">
+                <div class="team-en">${esc(m.away)}</div>
+                <div class="team-zh">${esc(teamZh(m.away))}</div>
+              </div>
+            </div>`;
         }).join("");
-      }
 
-      output.push(`
-        <section class="day">
-          <div class="day-head">
-            <div class="day-title">
-              ${escapeHtml(formatDay(day))}
-              ${key===todayKey?'<span class="today-badge">今天</span>':""}
-            </div>
-            <div class="day-count">${dayFixtures.length?dayFixtures.length+" 場":""}</div>
-          </div>
-          ${body}
-        </section>`);
+        return `<section class="league">
+          <div class="league-head">
+            ${logo?`<img class="league-logo" src="${esc(logo)}" alt="" loading="lazy">`:""}
+            <div class="league-name">${esc(groupName)}</div>
+          </div>${rows}</section>`;
+      }).join("");
     }
 
-    els.schedule.innerHTML=output.join("");
+    out.push(`<section class="day">
+      <div class="day-head">
+        <div class="day-title">${esc(fmtDay(day))}${key===todayKey?'<span class="today-badge">今天</span>':""}</div>
+        <div class="day-count">${items.length?items.length+" 場":""}</div>
+      </div>${body}</section>`);
+  }
+  els.schedule.innerHTML=out.join("");
+}
+
+function updateSubtitle(){
+  if(localKey(activeStart)===localKey(today())&&dateCount(activeStart,activeEnd)===14){
+    els.rangeSubtitle.textContent="今天起 14 天 · 台灣時間";
+  }else els.rangeSubtitle.textContent=`${fmtDate(activeStart)} ～ ${fmtDate(activeEnd)} · 台灣時間`;
+}
+
+async function loadRange(start,end){
+  activeStart=start;activeEnd=end;updateSubtitle();els.errorBox.style.display="none";
+  const c=readCache(start,end);
+
+  if(fresh(c)){
+    render(c.fixtures,start,end);
+    setStatus(`使用快取 · ${c.fixtures.length} 場 · ${fmtUpdate(c.fetchedAt)}`,"ok");
+    translateUnknownNames(c.fixtures).then(()=>render(c.fixtures,start,end));
+    return;
   }
 
-  async function loadRange(start,end,{force=false}={}){
-    activeStart=start;activeEnd=end;updateRangeSubtitle();
-    els.errorBox.style.display="none";
+  if(c)render(c.fixtures,start,end);else render([],start,end);
+  setStatus("正在更新所有賽事…","loading");
 
-    const cache=readCache(start,end);
-    if(!force&&isCacheFresh(cache)){
-      render(cache.fixtures,start,end);
-      setStatus(`使用快取 · ${cache.fixtures.length} 場 · 上次更新 ${formatUpdateTime(cache.fetchedAt)}`,"ok");
-      window.scrollTo({top:0,behavior:"smooth"});
-      return;
-    }
+  try{
+    const d=await fetchAll(start,end);
+    if(!d.fixtures.length)throw new Error("目前日期區間沒有取得任何賽程資料");
+    saveCache(start,end,d);
+    render(d.fixtures,start,end);
+    setStatus(`已更新 · 共 ${d.fixtures.length} 場 · ${fmtUpdate(d.fetchedAt)}`,"ok");
 
-    if(cache?.fixtures) render(cache.fixtures,start,end);
-    else render([],start,end);
+    // 背景補齊未知隊名中文翻譯，完成後重繪。
+    translateUnknownNames(d.fixtures).then(()=>render(d.fixtures,start,end));
 
-    setStatus("正在更新賽程…","loading");
-
-    try{
-      const data=await fetchAll(start,end);
-      if(data.fixtures.length===0&&data.errors.length===COMPETITIONS.length){
-        throw new Error(data.errors.join("\n"));
-      }
-      saveCache(start,end,data);
-      render(data.fixtures,start,end);
-      setStatus(`已更新 · 共 ${data.fixtures.length} 場 · ${formatUpdateTime(data.fetchedAt)}`,"ok");
-
-      if(data.errors.length){
-        els.errorBox.textContent="部分賽事暫時無法取得：\n"+data.errors.join("\n");
-        els.errorBox.style.display="block";
-      }
-    }catch(err){
-      setStatus(cache?"更新失敗，已保留上次資料":"更新失敗","error");
-      els.errorBox.textContent=
-        "目前無法取得賽程資料。\n\n"+(err?.message||"未知錯誤")+
-        (cache?"\n\n已繼續顯示上次成功取得的資料。":"");
-      els.errorBox.style.display="block";
-    }finally{
-      window.scrollTo({top:0,behavior:"smooth"});
-    }
+    // 單一來源失效時不干擾畫面，避免大量無效 slug 造成紅色錯誤。
+  }catch(e){
+    setStatus(c?"更新失敗，顯示上次資料":"更新失敗","error");
+    els.errorBox.textContent=(e?.message||"無法取得資料")+(c?"\n\n已保留上次成功取得的賽程。":"");
+    els.errorBox.style.display="block";
   }
+}
 
-  /* 月曆 */
-  function sameDay(a,b){
-    return a&&b&&localDateKey(a)===localDateKey(b);
+/* 月曆 */
+function same(a,b){return a&&b&&localKey(a)===localKey(b)}
+function renderCalendar(){
+  els.monthTitle.textContent=new Intl.DateTimeFormat("zh-TW",{year:"numeric",month:"long"}).format(viewMonth);
+  els.startText.textContent=tempStart?fmtDate(tempStart):"尚未選擇";
+  els.endText.textContent=tempEnd?fmtDate(tempEnd):"尚未選擇";
+  els.startBox.classList.toggle("active",selecting==="start");
+  els.endBox.classList.toggle("active",selecting==="end");
+  els.selectionHint.textContent=selecting==="start"?"請選擇開始日期":tempEnd?"日期區間已完成":"請選擇結束日期";
+  els.confirmRangeBtn.disabled=!(tempStart&&tempEnd);
+
+  const y=viewMonth.getFullYear(),m=viewMonth.getMonth(),first=new Date(y,m,1),startCell=new Date(y,m,1-first.getDay());
+  let html="";
+  for(let i=0;i<42;i++){
+    const d=new Date(startCell);d.setDate(startCell.getDate()+i);
+    html+=`<button class="day-btn${d.getMonth()!==m?" other":""}${same(d,tempStart)||same(d,tempEnd)?" selected":""}${tempStart&&tempEnd&&d>tempStart&&d<tempEnd?" in-range":""}${same(d,today())?" today":""}" data-date="${localKey(d)}">${d.getDate()}</button>`;
   }
-
-  function renderCalendar(){
-    els.monthTitle.textContent=new Intl.DateTimeFormat("zh-TW",{
-      year:"numeric",month:"long"
-    }).format(viewMonth);
-
-    els.startText.textContent=tempStart?formatShortDate(tempStart):"尚未選擇";
-    els.endText.textContent=tempEnd?formatShortDate(tempEnd):"尚未選擇";
-
-    els.startBox.classList.toggle("active",selecting==="start");
-    els.endBox.classList.toggle("active",selecting==="end");
-
-    els.selectionHint.textContent=
-      selecting==="start"?"請選擇開始日期":
-      tempEnd?"日期區間已選擇，按確定套用":"請選擇結束日期";
-
-    els.confirmRangeBtn.disabled=!(tempStart&&tempEnd);
-
-    const year=viewMonth.getFullYear();
-    const month=viewMonth.getMonth();
-    const first=new Date(year,month,1);
-    const startCell=new Date(year,month,1-first.getDay());
-    const today=taiwanTodayStart();
-
-    let html="";
-    for(let i=0;i<42;i++){
-      const d=new Date(startCell);
-      d.setDate(startCell.getDate()+i);
-
-      const other=d.getMonth()!==month;
-      const selected=sameDay(d,tempStart)||sameDay(d,tempEnd);
-      const inRange=tempStart&&tempEnd&&d>tempStart&&d<tempEnd;
-      const isToday=sameDay(d,today);
-
-      html+=`<button class="day-btn${other?" other":""}${selected?" selected":""}${inRange?" in-range":""}${isToday?" today":""}" data-date="${localDateKey(d)}">${d.getDate()}</button>`;
-    }
-    els.calendarGrid.innerHTML=html;
-
-    els.calendarGrid.querySelectorAll(".day-btn").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const picked=dateFromKey(btn.dataset.date);
-
-        if(selecting==="start"){
-          tempStart=picked;
-          tempEnd=null;
-          selecting="end";
-        }else{
-          if(!tempStart||picked<tempStart){
-            tempStart=picked;
-            tempEnd=null;
-            selecting="end";
-          }else{
-            tempEnd=picked;
-          }
-        }
-        renderCalendar();
-      });
-    });
-  }
-
-  function openCalendar(){
-    tempStart=new Date(activeStart);
-    tempEnd=new Date(activeEnd);
-    selecting="start";
-    viewMonth=new Date(activeStart.getFullYear(),activeStart.getMonth(),1);
-    renderCalendar();
-    els.calendarModal.classList.add("show");
-  }
-
-  function closeCalendar(){
-    els.calendarModal.classList.remove("show");
-  }
-
-  els.calendarBtn.addEventListener("click",openCalendar);
-  els.closeCalendarBtn.addEventListener("click",closeCalendar);
-  els.calendarModal.addEventListener("click",e=>{
-    if(e.target===els.calendarModal) closeCalendar();
-  });
-
-  els.startBox.addEventListener("click",()=>{selecting="start";renderCalendar();});
-  els.endBox.addEventListener("click",()=>{
-    if(tempStart){selecting="end";renderCalendar();}
-  });
-
-  els.prevMonthBtn.addEventListener("click",()=>{
-    viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()-1,1);
+  els.calendarGrid.innerHTML=html;
+  els.calendarGrid.querySelectorAll(".day-btn").forEach(b=>b.onclick=()=>{
+    const d=fromKey(b.dataset.date);
+    if(selecting==="start"){tempStart=d;tempEnd=null;selecting="end"}
+    else if(!tempStart||d<tempStart){tempStart=d;tempEnd=null;selecting="end"}
+    else tempEnd=d;
     renderCalendar();
   });
+}
+function openCalendar(){
+  tempStart=new Date(activeStart);tempEnd=new Date(activeEnd);selecting="start";
+  viewMonth=new Date(activeStart.getFullYear(),activeStart.getMonth(),1);
+  renderCalendar();els.calendarModal.classList.add("show");
+}
+function closeCalendar(){els.calendarModal.classList.remove("show")}
 
-  els.nextMonthBtn.addEventListener("click",()=>{
-    viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+1,1);
-    renderCalendar();
-  });
+els.calendarBtn.onclick=openCalendar;
+els.closeCalendarBtn.onclick=closeCalendar;
+els.calendarModal.onclick=e=>{if(e.target===els.calendarModal)closeCalendar()};
+els.startBox.onclick=()=>{selecting="start";renderCalendar()};
+els.endBox.onclick=()=>{if(tempStart){selecting="end";renderCalendar()}};
+els.prevMonthBtn.onclick=()=>{viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()-1,1);renderCalendar()};
+els.nextMonthBtn.onclick=()=>{viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+1,1);renderCalendar()};
+els.resetBtn.onclick=()=>{tempStart=null;tempEnd=null;selecting="start";viewMonth=new Date(today().getFullYear(),today().getMonth(),1);renderCalendar()};
+els.confirmRangeBtn.onclick=()=>{if(tempStart&&tempEnd){closeCalendar();loadRange(new Date(tempStart),new Date(tempEnd))}};
 
-  els.resetBtn.addEventListener("click",()=>{
-    tempStart=null;tempEnd=null;selecting="start";
-    viewMonth=new Date(taiwanTodayStart().getFullYear(),taiwanTodayStart().getMonth(),1);
-    renderCalendar();
-  });
-
-  els.confirmRangeBtn.addEventListener("click",()=>{
-    if(!tempStart||!tempEnd) return;
-    closeCalendar();
-    loadRange(new Date(tempStart),new Date(tempEnd));
-  });
-
-  updateRangeSubtitle();
-  loadRange(activeStart,activeEnd);
+updateSubtitle();
+loadRange(activeStart,activeEnd);
 })();
 </script>
 </body>
