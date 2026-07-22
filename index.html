@@ -7,120 +7,81 @@
 <title>歐洲足球賽程</title>
 <style>
   :root{
-    --bg:#f4f5f7;
-    --card:#ffffff;
-    --text:#111827;
-    --sub:#6b7280;
-    --line:#e5e7eb;
-    --accent:#111827;
-    --danger:#b91c1c;
+    --bg:#f4f5f7;--card:#fff;--text:#111827;--sub:#6b7280;--line:#e5e7eb;
+    --accent:#2563eb;--ok:#16a34a;--error:#dc2626;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
+    margin:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC",sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  button,input{font:inherit}
+  button{font:inherit}
   .app{max-width:760px;margin:0 auto;padding:16px 14px 60px}
   .topbar{
-    position:sticky;top:0;z-index:20;
-    background:rgba(244,245,247,.94);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
+    position:sticky;top:0;z-index:20;background:rgba(244,245,247,.95);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     padding:calc(10px + env(safe-area-inset-top)) 0 12px;
   }
   .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
   h1{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.5px}
   .subtitle{font-size:13px;color:var(--sub);margin-top:5px}
-  .icon-btn{
-    border:0;background:var(--card);width:42px;height:42px;border-radius:14px;
-    box-shadow:0 1px 5px rgba(0,0,0,.08);font-size:20px;cursor:pointer;
+  .refresh-btn{
+    border:0;background:var(--card);width:48px;height:48px;border-radius:16px;
+    box-shadow:0 1px 7px rgba(0,0,0,.09);font-size:22px;cursor:pointer
   }
+  .refresh-btn:disabled{opacity:.45}
   .status{
-    margin-top:12px;padding:10px 12px;background:var(--card);border-radius:13px;
-    font-size:13px;color:var(--sub);display:flex;align-items:center;gap:8px;
+    margin-top:12px;padding:11px 13px;background:var(--card);border-radius:14px;
+    font-size:13px;color:var(--sub);display:flex;align-items:center;gap:8px
   }
   .dot{width:8px;height:8px;border-radius:50%;background:#9ca3af;flex:none}
-  .dot.loading{animation:pulse 1s infinite}
-  .dot.ok{background:#16a34a}
-  .dot.error{background:#dc2626}
+  .dot.loading{background:#f59e0b;animation:pulse 1s infinite}
+  .dot.ok{background:var(--ok)}
+  .dot.error{background:var(--error)}
   @keyframes pulse{50%{opacity:.25}}
-  .day{margin-top:18px;scroll-margin-top:120px}
-  .day-head{
-    display:flex;align-items:baseline;justify-content:space-between;
-    padding:0 3px 8px;
-  }
-  .day-title{font-size:20px;font-weight:800;letter-spacing:-.2px}
+
+  .day{margin-top:18px;scroll-margin-top:125px}
+  .day-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px}
+  .day-title{font-size:21px;font-weight:850;letter-spacing:-.3px}
   .today-badge{
-    font-size:12px;font-weight:700;padding:3px 7px;border-radius:999px;
-    color:#fff;background:var(--accent);margin-left:7px;vertical-align:2px;
+    display:inline-block;margin-left:7px;padding:3px 7px;border-radius:999px;
+    background:#111827;color:#fff;font-size:11px;font-weight:800;vertical-align:3px
   }
   .day-count{font-size:12px;color:var(--sub)}
   .empty{
-    background:var(--card);border-radius:16px;padding:18px;
-    color:#9ca3af;text-align:center;font-size:14px;
+    background:var(--card);border-radius:17px;padding:20px;
+    color:#9ca3af;text-align:center;font-size:14px
   }
   .league{
-    background:var(--card);border-radius:18px;margin-bottom:10px;
-    overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.045);
+    background:var(--card);border-radius:18px;margin-bottom:11px;overflow:hidden;
+    box-shadow:0 1px 4px rgba(0,0,0,.045)
   }
   .league-head{
-    display:flex;align-items:center;gap:10px;padding:12px 14px;
-    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)
   }
-  .league-logo{width:28px;height:28px;object-fit:contain;flex:none}
-  .league-name{font-size:15px;font-weight:800;flex:1}
+  .league-logo{width:30px;height:30px;object-fit:contain;flex:none}
+  .league-name{font-size:15px;font-weight:850;flex:1}
   .match{
-    display:grid;grid-template-columns:56px 1fr 34px 1fr;
-    align-items:center;gap:8px;padding:12px 12px;
-    border-bottom:1px solid var(--line);
+    display:grid;grid-template-columns:55px minmax(0,1fr) 36px minmax(0,1fr);
+    align-items:center;gap:8px;padding:12px 11px;border-bottom:1px solid var(--line)
   }
   .match:last-child{border-bottom:0}
-  .time{text-align:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
-  .team{font-size:14px;font-weight:650;line-height:1.25}
-  .team.home{text-align:right}
-  .team.away{text-align:left}
-  .vs{text-align:center;font-size:12px;color:#9ca3af;font-weight:700}
-  .score{font-size:14px;color:var(--sub);font-weight:800}
-  .settings-backdrop{
-    position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:50;
-    display:none;align-items:flex-end;justify-content:center;
-  }
-  .settings-backdrop.show{display:flex}
-  .sheet{
-    width:min(760px,100%);background:#fff;border-radius:24px 24px 0 0;
-    padding:20px 16px calc(20px + env(safe-area-inset-bottom));
-    box-shadow:0 -8px 30px rgba(0,0,0,.15)
-  }
-  .sheet h2{margin:0 0 6px;font-size:22px}
-  .sheet p{margin:0 0 16px;color:var(--sub);font-size:13px;line-height:1.5}
-  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
-  .field input{
-    width:100%;border:1px solid #d1d5db;border-radius:13px;padding:13px 12px;
-    outline:none;background:#fff;
-  }
-  .field input:focus{border-color:#111827}
-  .actions{display:flex;gap:9px;margin-top:14px}
-  .btn{
-    flex:1;border:0;border-radius:13px;padding:13px 12px;font-weight:800;cursor:pointer;
-  }
-  .btn.primary{background:#111827;color:#fff}
-  .btn.secondary{background:#f3f4f6;color:#111827}
-  .btn.danger{background:#fee2e2;color:var(--danger)}
+  .time{text-align:center;font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
+  .team{font-size:14px;font-weight:650;line-height:1.28;overflow-wrap:anywhere}
+  .team.home{text-align:right}.team.away{text-align:left}
+  .vs{text-align:center;font-size:12px;color:#9ca3af;font-weight:800}
+  .score{font-size:14px;color:var(--text);font-weight:900}
   .error-box{
-    margin-top:16px;background:#fff;border-radius:16px;padding:16px;
-    color:var(--danger);font-size:14px;line-height:1.55;display:none;
+    display:none;margin-top:18px;background:#fff;border-radius:17px;padding:16px;
+    color:#b91c1c;font-size:14px;line-height:1.6;white-space:pre-line
   }
-  .footer-note{text-align:center;color:#9ca3af;font-size:11px;margin-top:26px}
-  @media (max-width:430px){
+  .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:28px;line-height:1.6}
+  @media(max-width:430px){
     h1{font-size:26px}
-    .match{grid-template-columns:48px minmax(0,1fr) 28px minmax(0,1fr);gap:6px;padding:11px 9px}
-    .team{font-size:13px}
-    .time{font-size:13px}
+    .match{grid-template-columns:49px minmax(0,1fr) 30px minmax(0,1fr);gap:6px;padding:11px 8px}
+    .team,.time{font-size:13px}
   }
 </style>
 </head>
@@ -132,51 +93,35 @@
         <h1>歐洲足球賽程</h1>
         <div class="subtitle">今天起 30 天 · 台灣時間</div>
       </div>
-      <button class="icon-btn" id="settingsBtn" aria-label="設定">⚙︎</button>
+      <button id="refreshBtn" class="refresh-btn" aria-label="立即更新">↻</button>
     </div>
-    <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">準備載入</span></div>
+    <div class="status">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">準備載入</span>
+    </div>
   </header>
 
   <main id="schedule"></main>
-  <div class="error-box" id="errorBox"></div>
-  <div class="footer-note">資料由 API-Football 提供</div>
-</div>
-
-<div class="settings-backdrop" id="settingsBackdrop">
-  <section class="sheet" role="dialog" aria-modal="true">
-    <h2>API 設定</h2>
-    <p>請輸入 API-Football 的 API Key。金鑰只會儲存在這台裝置的瀏覽器中，不會寫入此 HTML。</p>
-    <div class="field">
-      <label for="apiKeyInput">API Key</label>
-      <input id="apiKeyInput" type="password" autocomplete="off" placeholder="輸入你的 API Key">
-    </div>
-    <div class="actions">
-      <button class="btn secondary" id="closeSettingsBtn">取消</button>
-      <button class="btn primary" id="saveKeyBtn">儲存並更新</button>
-    </div>
-    <div class="actions">
-      <button class="btn danger" id="deleteKeyBtn">刪除已儲存金鑰</button>
-    </div>
-  </section>
+  <div id="errorBox" class="error-box"></div>
+  <div class="footer">資料來源：ESPN 公開賽程資料<br>本頁每 6 小時自動重新抓取一次</div>
 </div>
 
 <script>
 (() => {
   "use strict";
 
-  const API_BASE = "https://v3.football.api-sports.io";
-  const STORAGE_KEY = "football_api_key";
+  const CACHE_KEY = "euro_football_schedule_cache_v2";
+  const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 小時
 
-  // API-Football 賽事 ID
   const COMPETITIONS = [
-    { id: 39,  name: "英格蘭超級聯賽", order: 1 },
-    { id: 140, name: "西班牙甲級聯賽", order: 2 },
-    { id: 135, name: "義大利甲級聯賽", order: 3 },
-    { id: 78,  name: "德國甲級聯賽", order: 4 },
-    { id: 61,  name: "法國甲級聯賽", order: 5 },
-    { id: 2,   name: "歐洲冠軍聯賽", order: 6 },
-    { id: 3,   name: "歐霸聯賽", order: 7 },
-    { id: 848, name: "歐洲協會聯賽", order: 8 }
+    { slug:"eng.1",           name:"英格蘭超級聯賽", order:1 },
+    { slug:"esp.1",           name:"西班牙甲級聯賽", order:2 },
+    { slug:"ita.1",           name:"義大利甲級聯賽", order:3 },
+    { slug:"ger.1",           name:"德國甲級聯賽", order:4 },
+    { slug:"fra.1",           name:"法國甲級聯賽", order:5 },
+    { slug:"uefa.champions",  name:"歐洲冠軍聯賽",   order:6 },
+    { slug:"uefa.europa",     name:"歐霸聯賽",       order:7 },
+    { slug:"uefa.europa.conf",name:"歐洲協會聯賽",   order:8 }
   ];
 
   const els = {
@@ -184,315 +129,270 @@
     statusDot: document.getElementById("statusDot"),
     statusText: document.getElementById("statusText"),
     errorBox: document.getElementById("errorBox"),
-    settingsBackdrop: document.getElementById("settingsBackdrop"),
-    apiKeyInput: document.getElementById("apiKeyInput"),
-    settingsBtn: document.getElementById("settingsBtn"),
-    closeSettingsBtn: document.getElementById("closeSettingsBtn"),
-    saveKeyBtn: document.getElementById("saveKeyBtn"),
-    deleteKeyBtn: document.getElementById("deleteKeyBtn")
+    refreshBtn: document.getElementById("refreshBtn")
   };
 
-  function getApiKey() {
-    return localStorage.getItem(STORAGE_KEY) || "";
-  }
-
-  function setStatus(text, type = "") {
+  function setStatus(text, type=""){
     els.statusText.textContent = text;
     els.statusDot.className = "dot" + (type ? " " + type : "");
   }
 
-  function showSettings() {
-    els.apiKeyInput.value = getApiKey();
-    els.settingsBackdrop.classList.add("show");
-    setTimeout(() => els.apiKeyInput.focus(), 50);
-  }
-
-  function hideSettings() {
-    els.settingsBackdrop.classList.remove("show");
-  }
-
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
-
-  function localISODate(date) {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Taipei",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
+  function localDateKey(date){
+    const parts = new Intl.DateTimeFormat("en-CA",{
+      timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"
     }).formatToParts(date);
-    const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
-    return `${map.year}-${map.month}-${map.day}`;
+    const m = Object.fromEntries(parts.map(p=>[p.type,p.value]));
+    return `${m.year}-${m.month}-${m.day}`;
   }
 
-  function getTaiwanTodayStart() {
-    const todayStr = localISODate(new Date());
-    return new Date(`${todayStr}T00:00:00+08:00`);
+  function compactDate(date){
+    return localDateKey(date).replaceAll("-","");
   }
 
-  function addDays(date, days) {
-    const d = new Date(date);
-    d.setUTCDate(d.getUTCDate() + days);
-    return d;
+  function taiwanTodayStart(){
+    return new Date(localDateKey(new Date()) + "T00:00:00+08:00");
   }
 
-  function getSeasonForDate(date) {
-    const year = Number(new Intl.DateTimeFormat("en", {
-      timeZone: "Asia/Taipei",
-      year: "numeric"
-    }).format(date));
-    const month = Number(new Intl.DateTimeFormat("en", {
-      timeZone: "Asia/Taipei",
-      month: "numeric"
-    }).format(date));
-    return month >= 7 ? year : year - 1;
+  function addDays(date, days){
+    return new Date(date.getTime() + days * 86400000);
   }
 
-  function dateKeyFromFixture(iso) {
-    return localISODate(new Date(iso));
-  }
-
-  function formatTime(iso) {
-    return new Intl.DateTimeFormat("zh-TW", {
-      timeZone: "Asia/Taipei",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false
-    }).format(new Date(iso));
-  }
-
-  function formatDay(date) {
-    return new Intl.DateTimeFormat("zh-TW", {
-      timeZone: "Asia/Taipei",
-      month: "numeric",
-      day: "numeric",
-      weekday: "short"
+  function formatDay(date){
+    return new Intl.DateTimeFormat("zh-TW",{
+      timeZone:"Asia/Taipei",month:"numeric",day:"numeric",weekday:"short"
     }).format(date);
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  function formatTime(iso){
+    return new Intl.DateTimeFormat("zh-TW",{
+      timeZone:"Asia/Taipei",hour:"2-digit",minute:"2-digit",hour12:false
+    }).format(new Date(iso));
   }
 
-  function competitionMeta(id) {
-    return COMPETITIONS.find(c => c.id === id) || { order: 999, name: "" };
+  function escapeHtml(v){
+    return String(v ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
-  async function fetchCompetition(apiKey, competition, from, to, season) {
-    const url = new URL(`${API_BASE}/fixtures`);
-    url.searchParams.set("league", competition.id);
-    url.searchParams.set("season", season);
-    url.searchParams.set("from", from);
-    url.searchParams.set("to", to);
-    url.searchParams.set("timezone", "Asia/Taipei");
+  function getCompetition(slug){
+    return COMPETITIONS.find(c=>c.slug===slug);
+  }
 
-    const res = await fetch(url, {
-      headers: { "x-apisports-key": apiKey }
-    });
+  function normalizeEvent(event, competition, leagueLogo){
+    const comp = event?.competitions?.[0];
+    const competitors = comp?.competitors || [];
+    const home = competitors.find(x=>x.homeAway==="home");
+    const away = competitors.find(x=>x.homeAway==="away");
+    if(!home || !away || !event.date) return null;
 
-    if (!res.ok) {
-      throw new Error(`${competition.name} 查詢失敗（HTTP ${res.status}）`);
-    }
+    const state = event?.status?.type?.state || "pre";
+    const completed = !!event?.status?.type?.completed;
+    const hasScore = state === "in" || completed;
+
+    return {
+      id: event.id,
+      competitionSlug: competition.slug,
+      competitionName: competition.name,
+      competitionOrder: competition.order,
+      leagueLogo: leagueLogo || "",
+      date: event.date,
+      home: home.team?.displayName || home.team?.shortDisplayName || "主隊",
+      away: away.team?.displayName || away.team?.shortDisplayName || "客隊",
+      homeScore: hasScore ? home.score : null,
+      awayScore: hasScore ? away.score : null
+    };
+  }
+
+  async function fetchCompetition(competition, fromDate, toDate){
+    const url =
+      `https://site.api.espn.com/apis/site/v2/sports/soccer/${competition.slug}/scoreboard` +
+      `?dates=${compactDate(fromDate)}-${compactDate(toDate)}&limit=1000`;
+
+    const res = await fetch(url, { cache:"no-store" });
+    if(!res.ok) throw new Error(`${competition.name}：HTTP ${res.status}`);
 
     const data = await res.json();
+    const leagueLogo =
+      data?.leagues?.[0]?.logos?.[0]?.href ||
+      data?.leagues?.[0]?.logos?.[1]?.href || "";
 
-    if (data.errors && Object.keys(data.errors).length) {
-      const detail = Object.values(data.errors).join("、");
-      throw new Error(`${competition.name}：${detail}`);
-    }
-
-    return Array.isArray(data.response) ? data.response : [];
+    const events = Array.isArray(data.events) ? data.events : [];
+    return events.map(e=>normalizeEvent(e, competition, leagueLogo)).filter(Boolean);
   }
 
-  async function fetchAllFixtures(apiKey) {
-    const start = getTaiwanTodayStart();
-    const end = addDays(start, 29);
-    const from = localISODate(start);
-    const to = localISODate(end);
+  async function fetchAll(){
+    const start = taiwanTodayStart();
+    const end = addDays(start,29);
 
-    // 30 天可能跨越 7 月的賽季分界，因此同時涵蓋需要的 season。
-    const seasons = [...new Set([getSeasonForDate(start), getSeasonForDate(end)])];
-    const requests = [];
+    const settled = await Promise.allSettled(
+      COMPETITIONS.map(c=>fetchCompetition(c,start,end))
+    );
 
-    for (const comp of COMPETITIONS) {
-      for (const season of seasons) {
-        requests.push(
-          fetchCompetition(apiKey, comp, from, to, season)
-            .catch(err => ({ __error: err.message, __competition: comp.name }))
-        );
-      }
-    }
-
-    const results = await Promise.all(requests);
     const fixtures = [];
     const errors = [];
     const seen = new Set();
 
-    for (const result of results) {
-      if (result && result.__error) {
-        errors.push(result.__error);
-        continue;
-      }
-      for (const fixture of result) {
-        const id = fixture?.fixture?.id;
-        if (id && !seen.has(id)) {
-          seen.add(id);
-          fixtures.push(fixture);
+    settled.forEach((result, i)=>{
+      if(result.status === "fulfilled"){
+        for(const item of result.value){
+          if(!seen.has(item.id)){
+            seen.add(item.id);
+            fixtures.push(item);
+          }
         }
+      }else{
+        errors.push(`${COMPETITIONS[i].name}：${result.reason?.message || "查詢失敗"}`);
       }
-    }
+    });
 
-    return { fixtures, errors, start, end };
+    fixtures.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    return { fixtures, errors, start: localDateKey(start), fetchedAt: Date.now() };
   }
 
-  function render(fixtures, start) {
-    const days = [];
+  function saveCache(payload){
+    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+  }
 
-    for (let i = 0; i < 30; i++) {
-      const date = addDays(start, i);
-      const key = localISODate(date);
-      const dayFixtures = fixtures.filter(f => dateKeyFromFixture(f.fixture.date) === key);
+  function readCache(){
+    try{
+      const raw = localStorage.getItem(CACHE_KEY);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      if(!data || !Array.isArray(data.fixtures) || !data.fetchedAt) return null;
+      return data;
+    }catch{
+      return null;
+    }
+  }
 
-      const grouped = new Map();
-      for (const fixture of dayFixtures) {
-        const leagueId = fixture.league.id;
-        if (!grouped.has(leagueId)) grouped.set(leagueId, []);
-        grouped.get(leagueId).push(fixture);
+  function isCacheFresh(cache){
+    return cache && (Date.now() - cache.fetchedAt < CACHE_TTL);
+  }
+
+  function render(fixtures){
+    const start = taiwanTodayStart();
+    const output = [];
+
+    for(let i=0;i<30;i++){
+      const day = addDays(start,i);
+      const key = localDateKey(day);
+      const dayFixtures = fixtures.filter(f=>localDateKey(new Date(f.date))===key);
+
+      const groups = new Map();
+      for(const f of dayFixtures){
+        if(!groups.has(f.competitionSlug)) groups.set(f.competitionSlug,[]);
+        groups.get(f.competitionSlug).push(f);
       }
 
-      const leagues = [...grouped.entries()].sort((a, b) => {
-        return competitionMeta(a[0]).order - competitionMeta(b[0]).order;
+      const sortedGroups = [...groups.entries()].sort((a,b)=>{
+        return getCompetition(a[0]).order - getCompetition(b[0]).order;
       });
 
-      let body = "";
+      let body = `<div class="empty">本日無賽事</div>`;
 
-      if (!leagues.length) {
-        body = `<div class="empty">本日無賽事</div>`;
-      } else {
-        body = leagues.map(([leagueId, matches]) => {
-          const league = matches[0].league;
-          matches.sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date));
+      if(sortedGroups.length){
+        body = sortedGroups.map(([slug,matches])=>{
+          const meta = getCompetition(slug);
+          matches.sort((a,b)=>new Date(a.date)-new Date(b.date));
+          const logo = matches.find(x=>x.leagueLogo)?.leagueLogo || "";
 
-          const matchHtml = matches.map(match => {
-            const status = match.fixture.status.short;
-            const played = ["1H","HT","2H","ET","BT","P","SUSP","INT","FT","AET","PEN","LIVE"].includes(status);
-            let center = "VS";
-
-            if (played && match.goals.home !== null && match.goals.away !== null) {
-              center = `<span class="score">${escapeHtml(match.goals.home)}-${escapeHtml(match.goals.away)}</span>`;
-            }
+          const rows = matches.map(m=>{
+            const center =
+              m.homeScore !== null && m.awayScore !== null
+                ? `<span class="score">${escapeHtml(m.homeScore)}-${escapeHtml(m.awayScore)}</span>`
+                : "VS";
 
             return `
               <div class="match">
-                <div class="time">${escapeHtml(formatTime(match.fixture.date))}</div>
-                <div class="team home">${escapeHtml(match.teams.home.name)}</div>
+                <div class="time">${escapeHtml(formatTime(m.date))}</div>
+                <div class="team home">${escapeHtml(m.home)}</div>
                 <div class="vs">${center}</div>
-                <div class="team away">${escapeHtml(match.teams.away.name)}</div>
+                <div class="team away">${escapeHtml(m.away)}</div>
               </div>`;
           }).join("");
 
           return `
             <section class="league">
               <div class="league-head">
-                <img class="league-logo" src="${escapeHtml(league.logo)}" alt="" loading="lazy">
-                <div class="league-name">${escapeHtml(competitionMeta(leagueId).name || league.name)}</div>
+                ${logo ? `<img class="league-logo" src="${escapeHtml(logo)}" alt="" loading="lazy">` : ""}
+                <div class="league-name">${escapeHtml(meta.name)}</div>
               </div>
-              ${matchHtml}
+              ${rows}
             </section>`;
         }).join("");
       }
 
-      days.push(`
-        <section class="day" id="day-${key}">
+      output.push(`
+        <section class="day">
           <div class="day-head">
-            <div class="day-title">${escapeHtml(formatDay(date))}${i === 0 ? '<span class="today-badge">今天</span>' : ''}</div>
-            <div class="day-count">${dayFixtures.length ? dayFixtures.length + " 場" : ""}</div>
+            <div class="day-title">
+              ${escapeHtml(formatDay(day))}
+              ${i===0 ? '<span class="today-badge">今天</span>' : ''}
+            </div>
+            <div class="day-count">${dayFixtures.length ? dayFixtures.length+" 場" : ""}</div>
           </div>
           ${body}
         </section>`);
     }
 
-    els.schedule.innerHTML = days.join("");
+    els.schedule.innerHTML = output.join("");
   }
 
-  async function loadSchedule() {
-    const apiKey = getApiKey();
+  function formatUpdateTime(ts){
+    return new Intl.DateTimeFormat("zh-TW",{
+      timeZone:"Asia/Taipei",month:"numeric",day:"numeric",
+      hour:"2-digit",minute:"2-digit",hour12:false
+    }).format(new Date(ts));
+  }
 
-    if (!apiKey) {
-      setStatus("尚未設定 API Key");
-      render([], getTaiwanTodayStart());
-      showSettings();
+  async function load({force=false}={}){
+    els.errorBox.style.display = "none";
+    const cache = readCache();
+
+    if(!force && isCacheFresh(cache)){
+      render(cache.fixtures);
+      setStatus(`使用快取 · ${cache.fixtures.length} 場 · 上次更新 ${formatUpdateTime(cache.fetchedAt)}`,"ok");
       return;
     }
 
-    els.errorBox.style.display = "none";
-    els.errorBox.textContent = "";
-    setStatus("正在更新 30 天賽程…", "loading");
+    // 即使快取已過期，先顯示舊資料，避免畫面空白。
+    if(cache?.fixtures) render(cache.fixtures);
+    else render([]);
 
-    try {
-      const { fixtures, errors, start } = await fetchAllFixtures(apiKey);
-      render(fixtures, start);
+    els.refreshBtn.disabled = true;
+    setStatus("正在更新 30 天賽程…","loading");
 
-      if (errors.length && fixtures.length === 0) {
-        throw new Error(errors.join("\n"));
+    try{
+      const data = await fetchAll();
+
+      if(data.fixtures.length === 0 && data.errors.length === COMPETITIONS.length){
+        throw new Error(data.errors.join("\n"));
       }
 
-      const now = new Intl.DateTimeFormat("zh-TW", {
-        timeZone: "Asia/Taipei",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }).format(new Date());
+      saveCache(data);
+      render(data.fixtures);
+      setStatus(`已更新 · 共 ${data.fixtures.length} 場 · ${formatUpdateTime(data.fetchedAt)}`,"ok");
 
-      setStatus(`已更新 · 共 ${fixtures.length} 場 · ${now}`, "ok");
-
-      if (errors.length) {
-        els.errorBox.textContent = "部分賽事查詢未成功：\n" + errors.join("\n");
-        els.errorBox.style.whiteSpace = "pre-line";
+      if(data.errors.length){
+        els.errorBox.textContent = "部分賽事暫時無法取得：\n" + data.errors.join("\n");
         els.errorBox.style.display = "block";
       }
-    } catch (err) {
-      console.error(err);
-      setStatus("更新失敗", "error");
+    }catch(err){
+      setStatus(cache ? "更新失敗，已保留上次資料" : "更新失敗","error");
       els.errorBox.textContent =
-        `${err.message}\n\n請確認 API Key 是否正確，以及目前方案是否支援欲查詢的賽季。`;
-      els.errorBox.style.whiteSpace = "pre-line";
+        "目前無法取得賽程資料。\n\n" +
+        (err?.message || "未知錯誤") +
+        (cache ? "\n\n已繼續顯示手機中上次成功取得的資料。" : "");
       els.errorBox.style.display = "block";
+    }finally{
+      els.refreshBtn.disabled = false;
     }
   }
 
-  els.settingsBtn.addEventListener("click", showSettings);
-  els.closeSettingsBtn.addEventListener("click", hideSettings);
+  els.refreshBtn.addEventListener("click",()=>load({force:true}));
 
-  els.settingsBackdrop.addEventListener("click", e => {
-    if (e.target === els.settingsBackdrop) hideSettings();
-  });
-
-  els.saveKeyBtn.addEventListener("click", () => {
-    const key = els.apiKeyInput.value.trim();
-    if (!key) return;
-    localStorage.setItem(STORAGE_KEY, key);
-    hideSettings();
-    loadSchedule();
-  });
-
-  els.deleteKeyBtn.addEventListener("click", () => {
-    localStorage.removeItem(STORAGE_KEY);
-    els.apiKeyInput.value = "";
-    hideSettings();
-    setStatus("API Key 已刪除");
-    render([], getTaiwanTodayStart());
-    showSettings();
-  });
-
-  render([], getTaiwanTodayStart());
-  loadSchedule();
+  load();
 })();
 </script>
 </body>
