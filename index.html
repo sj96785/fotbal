@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f4f5f7">
-<title>歐洲足球賽程</title>
+<title>足球賽程</title>
 <style>
   :root{
     --bg:#f4f5f7;--card:#fff;--text:#111827;--sub:#6b7280;--line:#e5e7eb;
-    --accent:#2563eb;--ok:#16a34a;--error:#dc2626;
+    --accent:#2563eb;--accent-soft:#dbeafe;--ok:#16a34a;--error:#dc2626;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -25,13 +25,13 @@
     padding:calc(10px + env(safe-area-inset-top)) 0 12px;
   }
   .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  h1{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.5px}
-  .subtitle{font-size:13px;color:var(--sub);margin-top:5px}
-  .refresh-btn{
+  h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
+  .subtitle{font-size:13px;color:var(--sub);margin-top:6px}
+  .calendar-btn{
     border:0;background:var(--card);width:48px;height:48px;border-radius:16px;
-    box-shadow:0 1px 7px rgba(0,0,0,.09);font-size:22px;cursor:pointer
+    box-shadow:0 1px 7px rgba(0,0,0,.09);font-size:22px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
   }
-  .refresh-btn:disabled{opacity:.45}
   .status{
     margin-top:12px;padding:11px 13px;background:var(--card);border-radius:14px;
     font-size:13px;color:var(--sub);display:flex;align-items:center;gap:8px
@@ -78,8 +78,69 @@
     color:#b91c1c;font-size:14px;line-height:1.6;white-space:pre-line
   }
   .footer{text-align:center;color:#9ca3af;font-size:11px;margin-top:28px;line-height:1.6}
+
+  /* 日期區間選擇器 */
+  .modal{
+    position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.36);
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  .modal.show{display:flex}
+  .sheet{
+    width:min(760px,100%);max-height:88vh;overflow:auto;background:#fff;
+    border-radius:26px 26px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+    box-shadow:0 -10px 35px rgba(0,0,0,.18)
+  }
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .sheet-title{font-size:22px;font-weight:900}
+  .close-btn{
+    border:0;background:#f3f4f6;width:36px;height:36px;border-radius:12px;
+    font-size:20px;cursor:pointer
+  }
+  .range-summary{
+    display:grid;grid-template-columns:1fr 28px 1fr;gap:8px;align-items:center;
+    margin-bottom:14px
+  }
+  .range-box{
+    border:1.5px solid var(--line);border-radius:14px;padding:11px 10px;
+    text-align:center;background:#fff;cursor:pointer
+  }
+  .range-box.active{border-color:var(--accent);background:var(--accent-soft)}
+  .range-label{font-size:11px;color:var(--sub);margin-bottom:3px}
+  .range-date{font-size:14px;font-weight:850}
+  .arrow{text-align:center;color:#9ca3af}
+  .hint{text-align:center;color:var(--sub);font-size:12px;margin-bottom:12px}
+  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .month-title{font-size:17px;font-weight:900}
+  .nav-btn{
+    border:0;background:#f3f4f6;width:38px;height:38px;border-radius:12px;
+    font-size:20px;cursor:pointer
+  }
+  .weekdays,.calendar-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);gap:4px
+  }
+  .weekdays div{text-align:center;font-size:11px;color:#9ca3af;padding:7px 0}
+  .day-btn{
+    border:0;background:transparent;aspect-ratio:1/1;border-radius:12px;
+    font-weight:750;cursor:pointer;position:relative;color:var(--text)
+  }
+  .day-btn.other{color:#cbd5e1}
+  .day-btn.today::after{
+    content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--accent)
+  }
+  .day-btn.selected{background:var(--accent);color:#fff}
+  .day-btn.in-range{background:var(--accent-soft);border-radius:8px}
+  .day-btn.selected.today::after{background:#fff}
+  .sheet-actions{display:flex;gap:10px;margin-top:16px}
+  .btn{
+    flex:1;border:0;border-radius:14px;padding:14px 12px;font-weight:900;cursor:pointer
+  }
+  .btn.secondary{background:#f3f4f6;color:var(--text)}
+  .btn.primary{background:#111827;color:#fff}
+  .btn.primary:disabled{opacity:.4;cursor:not-allowed}
+
   @media(max-width:430px){
-    h1{font-size:26px}
+    h1{font-size:28px}
     .match{grid-template-columns:49px minmax(0,1fr) 30px minmax(0,1fr);gap:6px;padding:11px 8px}
     .team,.time{font-size:13px}
   }
@@ -90,10 +151,10 @@
   <header class="topbar">
     <div class="title-row">
       <div>
-        <h1>歐洲足球賽程</h1>
-        <div class="subtitle">今天起 30 天 · 台灣時間</div>
+        <h1>足球賽程</h1>
+        <div id="rangeSubtitle" class="subtitle">今天起 14 天 · 台灣時間</div>
       </div>
-      <button id="refreshBtn" class="refresh-btn" aria-label="立即更新">↻</button>
+      <button id="calendarBtn" class="calendar-btn" aria-label="選擇日期區間">📅</button>
     </div>
     <div class="status">
       <span id="statusDot" class="dot"></span>
@@ -103,25 +164,64 @@
 
   <main id="schedule"></main>
   <div id="errorBox" class="error-box"></div>
-  <div class="footer">資料來源：ESPN 公開賽程資料<br>本頁每 6 小時自動重新抓取一次</div>
+  <div class="footer">資料來源：ESPN 公開賽程資料<br>相同日期區間 6 小時內優先使用快取</div>
+</div>
+
+<div id="calendarModal" class="modal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="sheet-title">選擇日期區間</div>
+      <button id="closeCalendarBtn" class="close-btn" aria-label="關閉">×</button>
+    </div>
+
+    <div class="range-summary">
+      <div id="startBox" class="range-box active">
+        <div class="range-label">開始日期</div>
+        <div id="startText" class="range-date">尚未選擇</div>
+      </div>
+      <div class="arrow">→</div>
+      <div id="endBox" class="range-box">
+        <div class="range-label">結束日期</div>
+        <div id="endText" class="range-date">尚未選擇</div>
+      </div>
+    </div>
+
+    <div id="selectionHint" class="hint">請先選擇開始日期</div>
+
+    <div class="month-nav">
+      <button id="prevMonthBtn" class="nav-btn">‹</button>
+      <div id="monthTitle" class="month-title"></div>
+      <button id="nextMonthBtn" class="nav-btn">›</button>
+    </div>
+
+    <div class="weekdays">
+      <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+    </div>
+    <div id="calendarGrid" class="calendar-grid"></div>
+
+    <div class="sheet-actions">
+      <button id="resetBtn" class="btn secondary">重設</button>
+      <button id="confirmRangeBtn" class="btn primary" disabled>確定</button>
+    </div>
+  </div>
 </div>
 
 <script>
 (() => {
   "use strict";
 
-  const CACHE_KEY = "euro_football_schedule_cache_v2";
-  const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 小時
+  const CACHE_PREFIX = "euro_football_schedule_cache_v3_";
+  const CACHE_TTL = 6 * 60 * 60 * 1000;
 
   const COMPETITIONS = [
-    { slug:"eng.1",           name:"英格蘭超級聯賽", order:1 },
-    { slug:"esp.1",           name:"西班牙甲級聯賽", order:2 },
-    { slug:"ita.1",           name:"義大利甲級聯賽", order:3 },
-    { slug:"ger.1",           name:"德國甲級聯賽", order:4 },
-    { slug:"fra.1",           name:"法國甲級聯賽", order:5 },
-    { slug:"uefa.champions",  name:"歐洲冠軍聯賽",   order:6 },
-    { slug:"uefa.europa",     name:"歐霸聯賽",       order:7 },
-    { slug:"uefa.europa.conf",name:"歐洲協會聯賽",   order:8 }
+    { slug:"eng.1", name:"英格蘭超級聯賽", order:1 },
+    { slug:"esp.1", name:"西班牙甲級聯賽", order:2 },
+    { slug:"ita.1", name:"義大利甲級聯賽", order:3 },
+    { slug:"ger.1", name:"德國甲級聯賽", order:4 },
+    { slug:"fra.1", name:"法國甲級聯賽", order:5 },
+    { slug:"uefa.champions", name:"歐洲冠軍聯賽", order:6 },
+    { slug:"uefa.europa", name:"歐霸聯賽", order:7 },
+    { slug:"uefa.europa.conf", name:"歐洲協會聯賽", order:8 }
   ];
 
   const els = {
@@ -129,37 +229,50 @@
     statusDot: document.getElementById("statusDot"),
     statusText: document.getElementById("statusText"),
     errorBox: document.getElementById("errorBox"),
-    refreshBtn: document.getElementById("refreshBtn")
+    rangeSubtitle: document.getElementById("rangeSubtitle"),
+    calendarBtn: document.getElementById("calendarBtn"),
+    calendarModal: document.getElementById("calendarModal"),
+    closeCalendarBtn: document.getElementById("closeCalendarBtn"),
+    startBox: document.getElementById("startBox"),
+    endBox: document.getElementById("endBox"),
+    startText: document.getElementById("startText"),
+    endText: document.getElementById("endText"),
+    selectionHint: document.getElementById("selectionHint"),
+    monthTitle: document.getElementById("monthTitle"),
+    calendarGrid: document.getElementById("calendarGrid"),
+    prevMonthBtn: document.getElementById("prevMonthBtn"),
+    nextMonthBtn: document.getElementById("nextMonthBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    confirmRangeBtn: document.getElementById("confirmRangeBtn")
   };
 
-  function setStatus(text, type=""){
-    els.statusText.textContent = text;
-    els.statusDot.className = "dot" + (type ? " " + type : "");
+  function setStatus(text,type=""){
+    els.statusText.textContent=text;
+    els.statusDot.className="dot"+(type?" "+type:"");
   }
 
   function localDateKey(date){
-    const parts = new Intl.DateTimeFormat("en-CA",{
+    const p=new Intl.DateTimeFormat("en-CA",{
       timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"
     }).formatToParts(date);
-    const m = Object.fromEntries(parts.map(p=>[p.type,p.value]));
+    const m=Object.fromEntries(p.map(x=>[x.type,x.value]));
     return `${m.year}-${m.month}-${m.day}`;
   }
 
-  function compactDate(date){
-    return localDateKey(date).replaceAll("-","");
-  }
-
-  function taiwanTodayStart(){
-    return new Date(localDateKey(new Date()) + "T00:00:00+08:00");
-  }
-
-  function addDays(date, days){
-    return new Date(date.getTime() + days * 86400000);
-  }
+  function dateFromKey(key){ return new Date(key+"T00:00:00+08:00"); }
+  function taiwanTodayStart(){ return dateFromKey(localDateKey(new Date())); }
+  function addDays(date,days){ return new Date(date.getTime()+days*86400000); }
+  function compactDate(date){ return localDateKey(date).replaceAll("-",""); }
 
   function formatDay(date){
     return new Intl.DateTimeFormat("zh-TW",{
       timeZone:"Asia/Taipei",month:"numeric",day:"numeric",weekday:"short"
+    }).format(date);
+  }
+
+  function formatShortDate(date){
+    return new Intl.DateTimeFormat("zh-TW",{
+      timeZone:"Asia/Taipei",year:"numeric",month:"numeric",day:"numeric"
     }).format(date);
   }
 
@@ -170,139 +283,147 @@
   }
 
   function escapeHtml(v){
-    return String(v ?? "")
+    return String(v??"")
       .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
       .replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
-  function getCompetition(slug){
-    return COMPETITIONS.find(c=>c.slug===slug);
+  function daysBetweenInclusive(start,end){
+    return Math.floor((dateFromKey(localDateKey(end))-dateFromKey(localDateKey(start)))/86400000)+1;
   }
 
-  function normalizeEvent(event, competition, leagueLogo){
-    const comp = event?.competitions?.[0];
-    const competitors = comp?.competitors || [];
-    const home = competitors.find(x=>x.homeAway==="home");
-    const away = competitors.find(x=>x.homeAway==="away");
-    if(!home || !away || !event.date) return null;
+  let activeStart = taiwanTodayStart();
+  let activeEnd = addDays(activeStart,13);
 
-    const state = event?.status?.type?.state || "pre";
-    const completed = !!event?.status?.type?.completed;
-    const hasScore = state === "in" || completed;
+  let tempStart = null;
+  let tempEnd = null;
+  let selecting = "start";
+  let viewMonth = new Date(activeStart.getFullYear(), activeStart.getMonth(), 1);
 
-    return {
-      id: event.id,
-      competitionSlug: competition.slug,
-      competitionName: competition.name,
-      competitionOrder: competition.order,
-      leagueLogo: leagueLogo || "",
-      date: event.date,
-      home: home.team?.displayName || home.team?.shortDisplayName || "主隊",
-      away: away.team?.displayName || away.team?.shortDisplayName || "客隊",
-      homeScore: hasScore ? home.score : null,
-      awayScore: hasScore ? away.score : null
-    };
-  }
-
-  async function fetchCompetition(competition, fromDate, toDate){
-    const url =
-      `https://site.api.espn.com/apis/site/v2/sports/soccer/${competition.slug}/scoreboard` +
-      `?dates=${compactDate(fromDate)}-${compactDate(toDate)}&limit=1000`;
-
-    const res = await fetch(url, { cache:"no-store" });
-    if(!res.ok) throw new Error(`${competition.name}：HTTP ${res.status}`);
-
-    const data = await res.json();
-    const leagueLogo =
-      data?.leagues?.[0]?.logos?.[0]?.href ||
-      data?.leagues?.[0]?.logos?.[1]?.href || "";
-
-    const events = Array.isArray(data.events) ? data.events : [];
-    return events.map(e=>normalizeEvent(e, competition, leagueLogo)).filter(Boolean);
-  }
-
-  async function fetchAll(){
-    const start = taiwanTodayStart();
-    const end = addDays(start,29);
-
-    const settled = await Promise.allSettled(
-      COMPETITIONS.map(c=>fetchCompetition(c,start,end))
-    );
-
-    const fixtures = [];
-    const errors = [];
-    const seen = new Set();
-
-    settled.forEach((result, i)=>{
-      if(result.status === "fulfilled"){
-        for(const item of result.value){
-          if(!seen.has(item.id)){
-            seen.add(item.id);
-            fixtures.push(item);
-          }
-        }
-      }else{
-        errors.push(`${COMPETITIONS[i].name}：${result.reason?.message || "查詢失敗"}`);
-      }
-    });
-
-    fixtures.sort((a,b)=>new Date(a.date)-new Date(b.date));
-    return { fixtures, errors, start: localDateKey(start), fetchedAt: Date.now() };
-  }
-
-  function saveCache(payload){
-    localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
-  }
-
-  function readCache(){
-    try{
-      const raw = localStorage.getItem(CACHE_KEY);
-      if(!raw) return null;
-      const data = JSON.parse(raw);
-      if(!data || !Array.isArray(data.fixtures) || !data.fetchedAt) return null;
-      return data;
-    }catch{
-      return null;
+  function updateRangeSubtitle(){
+    const todayKey = localDateKey(taiwanTodayStart());
+    if(localDateKey(activeStart)===todayKey && daysBetweenInclusive(activeStart,activeEnd)===14){
+      els.rangeSubtitle.textContent="今天起 14 天 · 台灣時間";
+    }else{
+      els.rangeSubtitle.textContent=`${formatShortDate(activeStart)} ～ ${formatShortDate(activeEnd)} · 台灣時間`;
     }
   }
 
-  function isCacheFresh(cache){
-    return cache && (Date.now() - cache.fetchedAt < CACHE_TTL);
+  function getCompetition(slug){ return COMPETITIONS.find(c=>c.slug===slug); }
+
+  function normalizeEvent(event,competition,leagueLogo){
+    const comp=event?.competitions?.[0];
+    const competitors=comp?.competitors||[];
+    const home=competitors.find(x=>x.homeAway==="home");
+    const away=competitors.find(x=>x.homeAway==="away");
+    if(!home||!away||!event.date) return null;
+    const state=event?.status?.type?.state||"pre";
+    const completed=!!event?.status?.type?.completed;
+    const hasScore=state==="in"||completed;
+    return {
+      id:event.id,
+      competitionSlug:competition.slug,
+      competitionName:competition.name,
+      competitionOrder:competition.order,
+      leagueLogo:leagueLogo||"",
+      date:event.date,
+      home:home.team?.displayName||home.team?.shortDisplayName||"主隊",
+      away:away.team?.displayName||away.team?.shortDisplayName||"客隊",
+      homeScore:hasScore?home.score:null,
+      awayScore:hasScore?away.score:null
+    };
   }
 
-  function render(fixtures){
-    const start = taiwanTodayStart();
-    const output = [];
+  async function fetchCompetition(competition,fromDate,toDate){
+    const url=
+      `https://site.api.espn.com/apis/site/v2/sports/soccer/${competition.slug}/scoreboard`+
+      `?dates=${compactDate(fromDate)}-${compactDate(toDate)}&limit=1000`;
+    const res=await fetch(url,{cache:"no-store"});
+    if(!res.ok) throw new Error(`${competition.name}：HTTP ${res.status}`);
+    const data=await res.json();
+    const leagueLogo=data?.leagues?.[0]?.logos?.[0]?.href||data?.leagues?.[0]?.logos?.[1]?.href||"";
+    const events=Array.isArray(data.events)?data.events:[];
+    return events.map(e=>normalizeEvent(e,competition,leagueLogo)).filter(Boolean);
+  }
 
-    for(let i=0;i<30;i++){
-      const day = addDays(start,i);
-      const key = localDateKey(day);
-      const dayFixtures = fixtures.filter(f=>localDateKey(new Date(f.date))===key);
+  async function fetchAll(start,end){
+    const settled=await Promise.allSettled(
+      COMPETITIONS.map(c=>fetchCompetition(c,start,end))
+    );
+    const fixtures=[],errors=[],seen=new Set();
+    settled.forEach((result,i)=>{
+      if(result.status==="fulfilled"){
+        for(const item of result.value){
+          if(!seen.has(item.id)){seen.add(item.id);fixtures.push(item);}
+        }
+      }else{
+        errors.push(`${COMPETITIONS[i].name}：${result.reason?.message||"查詢失敗"}`);
+      }
+    });
+    fixtures.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    return {fixtures,errors,fetchedAt:Date.now()};
+  }
 
-      const groups = new Map();
+  function cacheKey(start,end){
+    return CACHE_PREFIX+localDateKey(start)+"_"+localDateKey(end);
+  }
+
+  function saveCache(start,end,payload){
+    localStorage.setItem(cacheKey(start,end),JSON.stringify(payload));
+  }
+
+  function readCache(start,end){
+    try{
+      const raw=localStorage.getItem(cacheKey(start,end));
+      if(!raw) return null;
+      const data=JSON.parse(raw);
+      if(!data||!Array.isArray(data.fixtures)||!data.fetchedAt) return null;
+      return data;
+    }catch{return null;}
+  }
+
+  function isCacheFresh(cache){
+    return cache&&(Date.now()-cache.fetchedAt<CACHE_TTL);
+  }
+
+  function formatUpdateTime(ts){
+    return new Intl.DateTimeFormat("zh-TW",{
+      timeZone:"Asia/Taipei",month:"numeric",day:"numeric",
+      hour:"2-digit",minute:"2-digit",hour12:false
+    }).format(new Date(ts));
+  }
+
+  function render(fixtures,start,end){
+    const output=[];
+    const count=daysBetweenInclusive(start,end);
+    const todayKey=localDateKey(taiwanTodayStart());
+
+    for(let i=0;i<count;i++){
+      const day=addDays(start,i);
+      const key=localDateKey(day);
+      const dayFixtures=fixtures.filter(f=>localDateKey(new Date(f.date))===key);
+
+      const groups=new Map();
       for(const f of dayFixtures){
         if(!groups.has(f.competitionSlug)) groups.set(f.competitionSlug,[]);
         groups.get(f.competitionSlug).push(f);
       }
 
-      const sortedGroups = [...groups.entries()].sort((a,b)=>{
-        return getCompetition(a[0]).order - getCompetition(b[0]).order;
-      });
+      const sortedGroups=[...groups.entries()].sort((a,b)=>
+        getCompetition(a[0]).order-getCompetition(b[0]).order
+      );
 
-      let body = `<div class="empty">本日無賽事</div>`;
+      let body=`<div class="empty">本日無賽事</div>`;
 
       if(sortedGroups.length){
-        body = sortedGroups.map(([slug,matches])=>{
-          const meta = getCompetition(slug);
+        body=sortedGroups.map(([slug,matches])=>{
+          const meta=getCompetition(slug);
           matches.sort((a,b)=>new Date(a.date)-new Date(b.date));
-          const logo = matches.find(x=>x.leagueLogo)?.leagueLogo || "";
+          const logo=matches.find(x=>x.leagueLogo)?.leagueLogo||"";
 
-          const rows = matches.map(m=>{
-            const center =
-              m.homeScore !== null && m.awayScore !== null
-                ? `<span class="score">${escapeHtml(m.homeScore)}-${escapeHtml(m.awayScore)}</span>`
-                : "VS";
-
+          const rows=matches.map(m=>{
+            const center=m.homeScore!==null&&m.awayScore!==null
+              ? `<span class="score">${escapeHtml(m.homeScore)}-${escapeHtml(m.awayScore)}</span>`:"VS";
             return `
               <div class="match">
                 <div class="time">${escapeHtml(formatTime(m.date))}</div>
@@ -315,7 +436,7 @@
           return `
             <section class="league">
               <div class="league-head">
-                ${logo ? `<img class="league-logo" src="${escapeHtml(logo)}" alt="" loading="lazy">` : ""}
+                ${logo?`<img class="league-logo" src="${escapeHtml(logo)}" alt="" loading="lazy">`:""}
                 <div class="league-name">${escapeHtml(meta.name)}</div>
               </div>
               ${rows}
@@ -328,71 +449,170 @@
           <div class="day-head">
             <div class="day-title">
               ${escapeHtml(formatDay(day))}
-              ${i===0 ? '<span class="today-badge">今天</span>' : ''}
+              ${key===todayKey?'<span class="today-badge">今天</span>':""}
             </div>
-            <div class="day-count">${dayFixtures.length ? dayFixtures.length+" 場" : ""}</div>
+            <div class="day-count">${dayFixtures.length?dayFixtures.length+" 場":""}</div>
           </div>
           ${body}
         </section>`);
     }
 
-    els.schedule.innerHTML = output.join("");
+    els.schedule.innerHTML=output.join("");
   }
 
-  function formatUpdateTime(ts){
-    return new Intl.DateTimeFormat("zh-TW",{
-      timeZone:"Asia/Taipei",month:"numeric",day:"numeric",
-      hour:"2-digit",minute:"2-digit",hour12:false
-    }).format(new Date(ts));
-  }
+  async function loadRange(start,end,{force=false}={}){
+    activeStart=start;activeEnd=end;updateRangeSubtitle();
+    els.errorBox.style.display="none";
 
-  async function load({force=false}={}){
-    els.errorBox.style.display = "none";
-    const cache = readCache();
-
-    if(!force && isCacheFresh(cache)){
-      render(cache.fixtures);
+    const cache=readCache(start,end);
+    if(!force&&isCacheFresh(cache)){
+      render(cache.fixtures,start,end);
       setStatus(`使用快取 · ${cache.fixtures.length} 場 · 上次更新 ${formatUpdateTime(cache.fetchedAt)}`,"ok");
+      window.scrollTo({top:0,behavior:"smooth"});
       return;
     }
 
-    // 即使快取已過期，先顯示舊資料，避免畫面空白。
-    if(cache?.fixtures) render(cache.fixtures);
-    else render([]);
+    if(cache?.fixtures) render(cache.fixtures,start,end);
+    else render([],start,end);
 
-    els.refreshBtn.disabled = true;
-    setStatus("正在更新 30 天賽程…","loading");
+    setStatus("正在更新賽程…","loading");
 
     try{
-      const data = await fetchAll();
-
-      if(data.fixtures.length === 0 && data.errors.length === COMPETITIONS.length){
+      const data=await fetchAll(start,end);
+      if(data.fixtures.length===0&&data.errors.length===COMPETITIONS.length){
         throw new Error(data.errors.join("\n"));
       }
-
-      saveCache(data);
-      render(data.fixtures);
+      saveCache(start,end,data);
+      render(data.fixtures,start,end);
       setStatus(`已更新 · 共 ${data.fixtures.length} 場 · ${formatUpdateTime(data.fetchedAt)}`,"ok");
 
       if(data.errors.length){
-        els.errorBox.textContent = "部分賽事暫時無法取得：\n" + data.errors.join("\n");
-        els.errorBox.style.display = "block";
+        els.errorBox.textContent="部分賽事暫時無法取得：\n"+data.errors.join("\n");
+        els.errorBox.style.display="block";
       }
     }catch(err){
-      setStatus(cache ? "更新失敗，已保留上次資料" : "更新失敗","error");
-      els.errorBox.textContent =
-        "目前無法取得賽程資料。\n\n" +
-        (err?.message || "未知錯誤") +
-        (cache ? "\n\n已繼續顯示手機中上次成功取得的資料。" : "");
-      els.errorBox.style.display = "block";
+      setStatus(cache?"更新失敗，已保留上次資料":"更新失敗","error");
+      els.errorBox.textContent=
+        "目前無法取得賽程資料。\n\n"+(err?.message||"未知錯誤")+
+        (cache?"\n\n已繼續顯示上次成功取得的資料。":"");
+      els.errorBox.style.display="block";
     }finally{
-      els.refreshBtn.disabled = false;
+      window.scrollTo({top:0,behavior:"smooth"});
     }
   }
 
-  els.refreshBtn.addEventListener("click",()=>load({force:true}));
+  /* 月曆 */
+  function sameDay(a,b){
+    return a&&b&&localDateKey(a)===localDateKey(b);
+  }
 
-  load();
+  function renderCalendar(){
+    els.monthTitle.textContent=new Intl.DateTimeFormat("zh-TW",{
+      year:"numeric",month:"long"
+    }).format(viewMonth);
+
+    els.startText.textContent=tempStart?formatShortDate(tempStart):"尚未選擇";
+    els.endText.textContent=tempEnd?formatShortDate(tempEnd):"尚未選擇";
+
+    els.startBox.classList.toggle("active",selecting==="start");
+    els.endBox.classList.toggle("active",selecting==="end");
+
+    els.selectionHint.textContent=
+      selecting==="start"?"請選擇開始日期":
+      tempEnd?"日期區間已選擇，按確定套用":"請選擇結束日期";
+
+    els.confirmRangeBtn.disabled=!(tempStart&&tempEnd);
+
+    const year=viewMonth.getFullYear();
+    const month=viewMonth.getMonth();
+    const first=new Date(year,month,1);
+    const startCell=new Date(year,month,1-first.getDay());
+    const today=taiwanTodayStart();
+
+    let html="";
+    for(let i=0;i<42;i++){
+      const d=new Date(startCell);
+      d.setDate(startCell.getDate()+i);
+
+      const other=d.getMonth()!==month;
+      const selected=sameDay(d,tempStart)||sameDay(d,tempEnd);
+      const inRange=tempStart&&tempEnd&&d>tempStart&&d<tempEnd;
+      const isToday=sameDay(d,today);
+
+      html+=`<button class="day-btn${other?" other":""}${selected?" selected":""}${inRange?" in-range":""}${isToday?" today":""}" data-date="${localDateKey(d)}">${d.getDate()}</button>`;
+    }
+    els.calendarGrid.innerHTML=html;
+
+    els.calendarGrid.querySelectorAll(".day-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const picked=dateFromKey(btn.dataset.date);
+
+        if(selecting==="start"){
+          tempStart=picked;
+          tempEnd=null;
+          selecting="end";
+        }else{
+          if(!tempStart||picked<tempStart){
+            tempStart=picked;
+            tempEnd=null;
+            selecting="end";
+          }else{
+            tempEnd=picked;
+          }
+        }
+        renderCalendar();
+      });
+    });
+  }
+
+  function openCalendar(){
+    tempStart=new Date(activeStart);
+    tempEnd=new Date(activeEnd);
+    selecting="start";
+    viewMonth=new Date(activeStart.getFullYear(),activeStart.getMonth(),1);
+    renderCalendar();
+    els.calendarModal.classList.add("show");
+  }
+
+  function closeCalendar(){
+    els.calendarModal.classList.remove("show");
+  }
+
+  els.calendarBtn.addEventListener("click",openCalendar);
+  els.closeCalendarBtn.addEventListener("click",closeCalendar);
+  els.calendarModal.addEventListener("click",e=>{
+    if(e.target===els.calendarModal) closeCalendar();
+  });
+
+  els.startBox.addEventListener("click",()=>{selecting="start";renderCalendar();});
+  els.endBox.addEventListener("click",()=>{
+    if(tempStart){selecting="end";renderCalendar();}
+  });
+
+  els.prevMonthBtn.addEventListener("click",()=>{
+    viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()-1,1);
+    renderCalendar();
+  });
+
+  els.nextMonthBtn.addEventListener("click",()=>{
+    viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+1,1);
+    renderCalendar();
+  });
+
+  els.resetBtn.addEventListener("click",()=>{
+    tempStart=null;tempEnd=null;selecting="start";
+    viewMonth=new Date(taiwanTodayStart().getFullYear(),taiwanTodayStart().getMonth(),1);
+    renderCalendar();
+  });
+
+  els.confirmRangeBtn.addEventListener("click",()=>{
+    if(!tempStart||!tempEnd) return;
+    closeCalendar();
+    loadRange(new Date(tempStart),new Date(tempEnd));
+  });
+
+  updateRangeSubtitle();
+  loadRange(activeStart,activeEnd);
 })();
 </script>
 </body>
