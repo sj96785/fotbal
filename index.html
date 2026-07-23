@@ -148,7 +148,7 @@ h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
 
   <main id="schedule"></main>
   <div id="errorBox" class="error-box"></div>
-  <div class="footer">資料來源：ESPN 公開賽程資料<br>包含主要聯賽、歐洲俱樂部正賽與重要國家隊正式賽事</div>
+  <div class="footer">資料來源：ESPN 公開賽程資料<br>僅顯示主要聯賽、歐洲俱樂部正賽與重要國家隊正式賽事</div>
 </div>
 
 <div id="calendarModal" class="modal">
@@ -186,7 +186,7 @@ h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
 "use strict";
 
 const CACHE_TTL = 6*60*60*1000;
-const CACHE_PREFIX = "football_schedule_full_v5_";
+const CACHE_PREFIX = "football_schedule_stable_v6_";
 const TRANSLATION_CACHE_KEY = "football_team_zh_cache_v1";
 
 /*
@@ -379,13 +379,32 @@ async function fetchSource(source,start,end){
 async function fetchAll(start,end){
   const settled=await Promise.allSettled(SOURCES.map(s=>fetchSource(s,start,end)));
   const fixtures=[],seen=new Set(),errors=[];
+  let successCount=0;
+
   settled.forEach((r,i)=>{
     if(r.status==="fulfilled"){
-      for(const f of r.value) if(!seen.has(f.id)){seen.add(f.id);fixtures.push(f)}
-    }else errors.push(r.reason?.message||SOURCES[i].groupName);
+      successCount++;
+      for(const f of r.value){
+        if(!seen.has(f.id)){
+          seen.add(f.id);
+          fixtures.push(f);
+        }
+      }
+    }else{
+      errors.push(r.reason?.message||SOURCES[i].groupName);
+    }
   });
+
   fixtures.sort((a,b)=>new Date(a.date)-new Date(b.date));
-  return{fixtures,errors,fetchedAt:Date.now()};
+
+  return{
+    fixtures,
+    errors,
+    successCount,
+    failureCount:errors.length,
+    totalSources:SOURCES.length,
+    fetchedAt:Date.now()
+  };
 }
 
 function cacheKey(s,e){return CACHE_PREFIX+localKey(s)+"_"+localKey(e)}
@@ -468,33 +487,72 @@ function updateSubtitle(){
 }
 
 async function loadRange(start,end){
-  activeStart=start;activeEnd=end;updateSubtitle();els.errorBox.style.display="none";
+  activeStart=start;
+  activeEnd=end;
+  updateSubtitle();
+  els.errorBox.style.display="none";
+  els.errorBox.textContent="";
+
   const c=readCache(start,end);
 
   if(fresh(c)){
     render(c.fixtures,start,end);
     setStatus(`使用快取 · ${c.fixtures.length} 場 · ${fmtUpdate(c.fetchedAt)}`,"ok");
-    translateUnknownNames(c.fixtures).then(()=>render(c.fixtures,start,end));
+    if(c.fixtures.length){
+      translateUnknownNames(c.fixtures).then(()=>render(c.fixtures,start,end));
+    }
     return;
   }
 
-  if(c)render(c.fixtures,start,end);else render([],start,end);
+  // 有舊快取就先顯示，沒有則先畫出完整日期區間的「本日無賽事」。
+  if(c) render(c.fixtures,start,end);
+  else render([],start,end);
+
   setStatus("正在更新所有賽事…","loading");
 
   try{
     const d=await fetchAll(start,end);
-    if(!d.fixtures.length)throw new Error("目前日期區間沒有取得任何賽程資料");
+
+    // 只有「全部資料來源都失敗」才算真正更新失敗。
+    if(d.successCount===0){
+      throw new Error("目前所有賽程資料來源都無法連線");
+    }
+
+    // 即使 0 場比賽也屬於成功結果，照樣快取並正常顯示。
     saveCache(start,end,d);
     render(d.fixtures,start,end);
-    setStatus(`已更新 · 共 ${d.fixtures.length} 場 · ${fmtUpdate(d.fetchedAt)}`,"ok");
 
-    // 背景補齊未知隊名中文翻譯，完成後重繪。
-    translateUnknownNames(d.fixtures).then(()=>render(d.fixtures,start,end));
+    if(d.fixtures.length===0){
+      setStatus(`已更新 · 此區間無正規賽 · ${fmtUpdate(d.fetchedAt)}`,"ok");
+    }else{
+      setStatus(`已更新 · 共 ${d.fixtures.length} 場 · ${fmtUpdate(d.fetchedAt)}`,"ok");
+    }
 
-    // 單一來源失效時不干擾畫面，避免大量無效 slug 造成紅色錯誤。
+    // 部分來源失敗時不影響其他成功資料，只在下方顯示輕量提示。
+    if(d.failureCount>0 && d.successCount>0){
+      els.errorBox.style.color="#6b7280";
+      els.errorBox.textContent=`部分賽事來源暫時無法取得（${d.failureCount}/${d.totalSources}），其餘資料已正常顯示。`;
+      els.errorBox.style.display="block";
+    }else{
+      els.errorBox.style.display="none";
+    }
+
+    if(d.fixtures.length){
+      translateUnknownNames(d.fixtures).then(()=>render(d.fixtures,start,end));
+    }
+
   }catch(e){
-    setStatus(c?"更新失敗，顯示上次資料":"更新失敗","error");
-    els.errorBox.textContent=(e?.message||"無法取得資料")+(c?"\n\n已保留上次成功取得的賽程。":"");
+    if(c){
+      render(c.fixtures,start,end);
+      setStatus("更新失敗，已顯示上次資料","error");
+      els.errorBox.style.color="#b91c1c";
+      els.errorBox.textContent=(e?.message||"無法取得資料")+"\n\n已保留上次成功取得的賽程。";
+    }else{
+      render([],start,end);
+      setStatus("更新失敗","error");
+      els.errorBox.style.color="#b91c1c";
+      els.errorBox.textContent=e?.message||"無法取得資料";
+    }
     els.errorBox.style.display="block";
   }
 }
