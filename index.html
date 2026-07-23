@@ -71,8 +71,11 @@ h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
 }
 .match:last-child{border-bottom:0}
 .time{text-align:center;font-size:13px;font-weight:850;font-variant-numeric:tabular-nums}
-.team{line-height:1.15;min-width:0}
-.team.home{text-align:right}.team.away{text-align:left}
+.team{line-height:1.15;min-width:0;display:flex;align-items:center;gap:7px}
+.team.home{text-align:right;justify-content:flex-end}
+.team.away{text-align:left;justify-content:flex-start}
+.team-text{min-width:0}
+.team-logo{width:28px;height:28px;object-fit:contain;flex:none}
 .team-en{font-size:13px;font-weight:750;overflow-wrap:anywhere}
 .team-zh{font-size:11px;color:var(--sub);margin-top:4px;overflow-wrap:anywhere}
 .vs{text-align:center;font-size:12px;color:#9ca3af;font-weight:800}
@@ -145,7 +148,7 @@ h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.7px}
 
   <main id="schedule"></main>
   <div id="errorBox" class="error-box"></div>
-  <div class="footer">資料來源：ESPN 公開賽程資料<br>包含主要聯賽、歐洲俱樂部賽事與重要國家隊賽事</div>
+  <div class="footer">資料來源：ESPN 公開賽程資料<br>包含主要聯賽、歐洲俱樂部正賽與重要國家隊正式賽事</div>
 </div>
 
 <div id="calendarModal" class="modal">
@@ -199,24 +202,14 @@ const SOURCES = [
   {slug:"fra.1",sourceName:"Ligue 1",groupName:"法國甲級聯賽",order:50},
 
   {slug:"uefa.champions",sourceName:"UEFA Champions League",groupName:"歐洲冠軍聯賽",order:60},
-  {slug:"uefa.champions_qual",sourceName:"UEFA Champions League Qualifying",groupName:"歐洲冠軍聯賽",order:60,stagePrefix:"資格賽"},
 
   {slug:"uefa.europa",sourceName:"UEFA Europa League",groupName:"歐霸聯賽",order:70},
-  {slug:"uefa.europa_qual",sourceName:"UEFA Europa League Qualifying",groupName:"歐霸聯賽",order:70,stagePrefix:"資格賽"},
 
   {slug:"uefa.europa.conf",sourceName:"UEFA Conference League",groupName:"歐洲協會聯賽",order:80},
-  {slug:"uefa.europa.conf_qual",sourceName:"UEFA Conference League Qualifying",groupName:"歐洲協會聯賽",order:80,stagePrefix:"資格賽"},
 
   {slug:"fifa.world",sourceName:"FIFA World Cup",groupName:"世界盃",order:100},
-  {slug:"fifa.worldq.uefa",sourceName:"FIFA World Cup Qualifying - UEFA",groupName:"世界盃",order:100,stagePrefix:"歐洲區資格賽"},
-  {slug:"fifa.worldq.conmebol",sourceName:"FIFA World Cup Qualifying - CONMEBOL",groupName:"世界盃",order:100,stagePrefix:"南美洲區資格賽"},
-  {slug:"fifa.worldq.concacaf",sourceName:"FIFA World Cup Qualifying - CONCACAF",groupName:"世界盃",order:100,stagePrefix:"中北美洲及加勒比海區資格賽"},
-  {slug:"fifa.worldq.afc",sourceName:"FIFA World Cup Qualifying - AFC",groupName:"世界盃",order:100,stagePrefix:"亞洲區資格賽"},
-  {slug:"fifa.worldq.caf",sourceName:"FIFA World Cup Qualifying - CAF",groupName:"世界盃",order:100,stagePrefix:"非洲區資格賽"},
-  {slug:"fifa.worldq.ofc",sourceName:"FIFA World Cup Qualifying - OFC",groupName:"世界盃",order:100,stagePrefix:"大洋洲區資格賽"},
 
   {slug:"uefa.euro",sourceName:"UEFA European Championship",groupName:"歐洲國家盃",order:110},
-  {slug:"uefa.euroq",sourceName:"UEFA European Championship Qualifying",groupName:"歐洲國家盃",order:110,stagePrefix:"資格賽"},
   {slug:"uefa.nations",sourceName:"UEFA Nations League",groupName:"歐洲國家聯賽",order:120},
 
   {slug:"conmebol.copa_america",sourceName:"Copa América",groupName:"美洲盃",order:130}
@@ -368,6 +361,8 @@ function normalizeEvent(event,source,logo){
     stage:detail,
     home:home.team?.displayName||home.team?.shortDisplayName||"Home",
     away:away.team?.displayName||away.team?.shortDisplayName||"Away",
+    homeLogo:home.team?.logo||home.team?.logos?.[0]?.href||"",
+    awayLogo:away.team?.logo||away.team?.logos?.[0]?.href||"",
     homeScore:hasScore?home.score:null,awayScore:hasScore?away.score:null
   };
 }
@@ -424,7 +419,7 @@ function render(fixtures,start,end){
         const logo=matches.find(x=>x.leagueLogo)?.leagueLogo||"";
 
         const rows=matches.map(m=>{
-          const stageText=[m.stagePrefix,m.stage].filter(Boolean).join(" · ");
+          const stageText=m.stage||"";
           const center=m.homeScore!==null&&m.awayScore!==null
             ? `<span class="score">${esc(m.homeScore)}-${esc(m.awayScore)}</span>`:"VS";
           return `
@@ -432,13 +427,19 @@ function render(fixtures,start,end){
             <div class="match">
               <div class="time">${esc(fmtTime(m.date))}</div>
               <div class="team home">
-                <div class="team-en">${esc(m.home)}</div>
-                <div class="team-zh">${esc(teamZh(m.home))}</div>
+                <div class="team-text">
+                  <div class="team-en">${esc(m.home)}</div>
+                  <div class="team-zh">${esc(teamZh(m.home))}</div>
+                </div>
+                ${m.homeLogo?`<img class="team-logo" src="${esc(m.homeLogo)}" alt="" loading="lazy">`:""}
               </div>
               <div class="vs">${center}</div>
               <div class="team away">
-                <div class="team-en">${esc(m.away)}</div>
-                <div class="team-zh">${esc(teamZh(m.away))}</div>
+                ${m.awayLogo?`<img class="team-logo" src="${esc(m.awayLogo)}" alt="" loading="lazy">`:""}
+                <div class="team-text">
+                  <div class="team-en">${esc(m.away)}</div>
+                  <div class="team-zh">${esc(teamZh(m.away))}</div>
+                </div>
               </div>
             </div>`;
         }).join("");
